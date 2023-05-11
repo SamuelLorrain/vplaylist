@@ -1,0 +1,9 @@
+db.sqlite3
+vplaylist/config.py
+scripts/
+*.gcs
+*.db
+*.sqlite3
+*.sql
+*.pyc
+__pycache__/*
