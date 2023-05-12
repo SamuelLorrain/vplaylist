@@ -1,6 +1,6 @@
 import string
-import itertools
 from vplaylist.entities.search_video import Webm, Quality, Sorting
+
 
 def is_safe_term_search(expr: str):
     """

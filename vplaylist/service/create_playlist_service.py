@@ -12,14 +12,14 @@ from vplaylist.utils.query_constructor import QueryConstructor
 from vplaylist.utils.db_utils import (
     get_query_for_webm,
     get_query_for_quality,
-    is_safe_term_search,
+    # is_safe_term_search,
     get_query_for_sorting,
 )
 from vplaylist.utils.regex_utils import (
     synonyms_from_terms,
     regexp_permutate,
     basic_regexp,
-    regext_alternative_from_list
+    regexp_alternative_from_list,
 )
 import sqlite3
 import random
@@ -85,7 +85,7 @@ class CreatePlaylistService:
         # FIXME put all the connection login in another service
         self.conn = sqlite3.connect("db.sqlite3")
         self.conn.create_function("REGEXP", 2, basic_regexp)
-        params = self.query.getParams()
+        params = self.query.get_params()
         if params:
             query_result = self.conn.execute(
                 self.query.get_query_string(), params

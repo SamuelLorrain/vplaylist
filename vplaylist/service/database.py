@@ -1,6 +1,6 @@
 import os
 import sqlite3
-import Path
+from pathlib import Path
 import json
 import re
 import subprocess
@@ -11,7 +11,7 @@ config = {"DB_FILE": ""}
 
 
 class DatabaseService:
-    def insert_new_elements_in_database():
+    def insert_new_elements_in_database(self):
         """Insert data to the database based on DB_PATHS config variable"""
 
         def get_key_from_list_of_dict(lst, key):
@@ -124,7 +124,7 @@ class DatabaseService:
         dbConnection.close()
         return True
 
-    def delete_non_existing_files_from_database():
+    def delete_non_existing_files_from_database(self):
         """Clean the database
 
         Check for all the video that doesn't exists

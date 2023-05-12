@@ -3,29 +3,29 @@ from enum import Enum, auto
 from dataclasses import dataclass, field
 
 
-class Webm(Enum):
-    NO_WEBM = auto()
-    ONLY_WEBM = auto()
-    ALL = auto()
+class Webm(str, Enum):
+    NO_WEBM = "no_webm"
+    ONLY_WEBM = "only_webm"
+    ALL = "all"
 
 
-class Quality(Enum):
-    ONLY_SD = auto()
-    ONLY_HD = auto()
-    ALL = auto()
+class Quality(str, Enum):
+    ONLY_SD = "sd"
+    ONLY_HD = "hd"
+    ALL = "all"
 
 
-class Sorting(Enum):
-    SQL_RANDOM_FUNCTION = auto()
-    ON_RAM_RANDOMIZE = auto()
-    LAST_BY_DATE_DOWN = auto()
-    LAST_BY_ID = auto()
+class Sorting(str, Enum):
+    SQL_RANDOM_FUNCTION = "random_1"
+    ON_RAM_RANDOMIZE = "random_2"
+    LAST_BY_DATE_DOWN = "last_by_date"
+    LAST_BY_ID = "last_by_id"
 
 
-class SearchType(Enum):
-    BASIC = auto()
-    NO_SEARCH = auto()
-    BEST = auto()
+class SearchType(str, Enum):
+    BASIC = "basic"
+    NO_SEARCH = "no_search"
+    BEST = "best"
 
 
 @dataclass

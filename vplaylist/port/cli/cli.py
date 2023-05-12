@@ -1,11 +1,12 @@
 from vplaylist.port.cli.parser import CliParser
 from vplaylist.entities.search_video import SearchVideo
 from vplaylist.actions.create_playlist import create_playlist
-from vplaylist.actions.clean_playlist import clean_database
-from vplaylist.actions.update_playlist import update_database
-from vplaylist.service.play_playlist_service import play_playlist
+from vplaylist.actions.clean_database import clean_database
+from vplaylist.actions.update_database import update_database
+from vplaylist.service.play_playlist_service import PlayPlaylistService
 
-class Cli():
+
+class Cli:
     def __init__(self):
         self.parser = CliParser()
         self.args: dict = self.parser.get_args()
@@ -13,9 +14,9 @@ class Cli():
         # TODO handle "--debug" option
 
     def route_args(self):
-        if (self.args["generate"]):
+        if self.args["generate"]:
             self.generate_database_controller()
-        if (self.args["clean_database"]):
+        if self.args["clean_database"]:
             self.clean_database_controller()
         else:
             self.create_playlist_controller()
@@ -36,21 +37,22 @@ class Cli():
 
     def create_playlist_controller(self):
         search_video = SearchVideo(
-            webm=self.args['webm'],
-            quality=self.args['quality'],
-            limit=self.args['limit'],
-            shift=self.args['shift'],
-            sorting=self.args['sorting'],
-            search_term=self.args['term'],
-            search_type=self.args['search_type']
+            webm=self.args["webm"],
+            quality=self.args["quality"],
+            limit=self.args["limit"],
+            shift=self.args["shift"],
+            sorting=self.args["sorting"],
+            search_term=self.args["term"],
+            search_type=self.args["search_type"],
         )
         playlist = create_playlist(search_video)
 
-        if self.args['display']:
+        if self.args["display"]:
             print(playlist)
 
-        if not self.args['no_play']:
-            play_playlist(playlist)
+        if not self.args["no_play"]:
+            # FIXME need to inject config somehow
+            play_playlist_service = PlayPlaylistService( playlist)
+            play_playlist_service.play_playlist()
         else:
             print("no play")
-

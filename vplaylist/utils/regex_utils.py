@@ -1,7 +1,9 @@
 import re
+import itertools
 
 # FIXME change
 config = {"SYNONYMS": []}
+
 
 def basic_regexp(expr: str, item) -> bool:
     reg = re.compile(expr, re.IGNORECASE)
@@ -34,5 +36,3 @@ def synonyms_from_terms(expr: str) -> str:
             if expr == j:
                 return "|".join(i)
     return expr
-
-

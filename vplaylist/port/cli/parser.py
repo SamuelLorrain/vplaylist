@@ -1,15 +1,12 @@
-from vplaylist.entities.search_video import (
-    Webm,
-    Quality,
-    Sorting
-)
+from vplaylist.entities.search_video import Webm, Quality, Sorting, SearchType
 import argparse
 
 DEFAULT_LIMIT = 150
 HARD_LIMIT = 300
 
 
-class CliParser: def __init__(self):
+class CliParser:
+    def __init__(self):
         self.parser = argparse.ArgumentParser(description="vplaylist 2nd version")
         self.args = {}
         self._init_parser_config()
@@ -18,7 +15,7 @@ class CliParser: def __init__(self):
     def get_args(self) -> dict:
         return self.args
 
-    def _init_search_video_parser_config():
+    def _init_search_video_parser_config(self) -> None:
         self.parser.add_argument(
             "--webm",
             "--only-webm",
@@ -80,7 +77,7 @@ class CliParser: def __init__(self):
             dest="sorting",
             const=Sorting.LAST_BY_DATE_DOWN,
             default=Sorting.SQL_RANDOM_FUNCTION,
-            help="give lasts vids"
+            help="give lasts vids",
         )
         self.parser.add_argument(
             "--last-by-id",
@@ -100,7 +97,11 @@ class CliParser: def __init__(self):
         )
         self.parser.add_argument("term", nargs="?", default=".*", help="term to search")
         self.parser.add_argument(
-            "--no-play", action="store_const", const=True, default=False, help="don't play"
+            "--no-play",
+            action="store_const",
+            const=True,
+            default=False,
+            help="don't play",
         )
         self.parser.add_argument(
             "--display-playlist",
@@ -119,7 +120,7 @@ class CliParser: def __init__(self):
             help="best based on config",
         )
 
-    def _init_generate_db_parser_config() -> None:
+    def _init_generate_db_parser_config(self) -> None:
         self.parser.add_argument(
             "-g",
             "--generate",
@@ -130,7 +131,7 @@ class CliParser: def __init__(self):
             help="generate DB",
         )
 
-    def _init_clean_db_parser_config() -> None:
+    def _init_clean_db_parser_config(self) -> None:
         self.parser.add_argument(
             "--clean-database",
             action="store_const",
@@ -140,12 +141,16 @@ class CliParser: def __init__(self):
             help="clean database",
         )
 
-    def _init_config_db_parser_config() -> None:
+    def _init_config_db_parser_config(self) -> None:
         self.parser.add_argument(
-            "--debug", action="store_const", const=True, default=False, help="show debug informations"
+            "--debug",
+            action="store_const",
+            const=True,
+            default=False,
+            help="show debug informations",
         )
 
     def _init_parser_config(self) -> None:
-        _init_search_video_parser_config()
-        _init_generate_db_parser_config()
-        _init_clean_db_parser_config()
+        self._init_search_video_parser_config()
+        self._init_generate_db_parser_config()
+        self._init_clean_db_parser_config()

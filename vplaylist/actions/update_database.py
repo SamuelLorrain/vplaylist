@@ -1,5 +1,7 @@
-from vplaylist.service.database import insert_new_elements_in_database
+from vplaylist.service.database import DatabaseService
 
 
 def update_database() -> bool:
-    return insert_new_elements_in_database()
+    database_service = DatabaseService()
+    database_service.insert_new_elements_in_database()
+    return True
