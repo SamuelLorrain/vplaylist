@@ -7,3 +7,4 @@ scripts/
 *.sql
 *.pyc
 __pycache__/*
+config.toml

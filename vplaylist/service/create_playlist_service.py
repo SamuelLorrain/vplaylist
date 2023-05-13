@@ -12,7 +12,7 @@ from vplaylist.utils.query_constructor import QueryConstructor
 from vplaylist.utils.db_utils import (
     get_query_for_webm,
     get_query_for_quality,
-    # is_safe_term_search,
+    is_safe_term_search,
     get_query_for_sorting,
 )
 from vplaylist.utils.regex_utils import (
@@ -21,17 +21,16 @@ from vplaylist.utils.regex_utils import (
     basic_regexp,
     regexp_alternative_from_list,
 )
+from vplaylist.config.config_registry import ConfigRegistry
 import sqlite3
 import random
-
-# FIXME change
-config = {"BEST": []}
-
 
 class CreatePlaylistService:
     def __init__(self, search: SearchVideo):
         self.search = search
         self.query = None
+        self.config_registry = ConfigRegistry()
+        self.config_best = self.config_registry.best
 
     def create_playlist(self) -> Playlist:
         self.query = self._convert_search_to_query()
@@ -66,12 +65,12 @@ class CreatePlaylistService:
             case SearchType.NO_SEARCH:
                 pass
             case SearchType.BEST:
-                best_reg = regexp_alternative_from_list(config["BEST"])
+                best_reg = regexp_alternative_from_list(self.config_best)
                 query = query.add_where_clause("data_video.path REGEXP ?")
                 query = query.add_param(best_reg)
             case SearchType.BASIC:
                 search_term = self.search.search_term
-                # FIXME re-add no safe search term
+                # FIXME read safe terms!
                 # if not is_safe_term_search(search_term):
                 #     raise ValueError(search_term)
                 if self.search.should_use_synonyms:

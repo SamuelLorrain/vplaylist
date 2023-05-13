@@ -51,7 +51,6 @@ class Cli:
             print(playlist)
 
         if not self.args["no_play"]:
-            # FIXME need to inject config somehow
             play_playlist_service = PlayPlaylistService( playlist)
             play_playlist_service.play_playlist()
         else:

@@ -1,9 +1,6 @@
 import re
 import itertools
-
-# FIXME change
-config = {"SYNONYMS": []}
-
+from vplaylist.config.config_registry import ConfigRegistry
 
 def basic_regexp(expr: str, item) -> bool:
     reg = re.compile(expr, re.IGNORECASE)
@@ -28,10 +25,12 @@ def regexp_alternative_from_list(terms: list[str]) -> str:
 
 
 def synonyms_from_terms(expr: str) -> str:
+    config_registry = ConfigRegistry()
     if " " in expr:
         return expr
 
-    for i in config["SYNONYMS"]:
+    # FIXME should be in the playlistService
+    for i in config_registry.synonyms:
         for j in i:
             if expr == j:
                 return "|".join(i)

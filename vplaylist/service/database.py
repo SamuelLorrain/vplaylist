@@ -7,9 +7,7 @@ import subprocess
 import datetime
 from dataclasses import dataclass
 from uuid import UUID
-
-# FIXME
-config = {"DB_FILE": "./db.sqlite3"}
+from vplaylist.config.config_registry import ConfigRegistry
 
 @dataclass
 class VideoPath:
@@ -17,8 +15,14 @@ class VideoPath:
     path: Path
 
 class DatabaseService:
+    def __init__(self):
+        self.config_registry = ConfigRegistry()
+        self.db_file = self.config_registry.db_file
+        self.db_paths = self.config_registry.db_paths
+        self.ignore_paths = self.config_registry.ignore_paths
+
     def fetch_video_from_uuid(self, uuid: UUID) -> VideoPath:
-        db_connection = sqlite3.connect(config["DB_FILE"])
+        db_connection = sqlite3.connect(self.db_file)
         cursor = db_connection.execute("""
             select data_rootpath.path, data_video.path
             from data_video
@@ -39,14 +43,14 @@ class DatabaseService:
 
         files = []
         # TODO put connection low level logic in another service
-        dbConnection = sqlite3.connect(config["DB_FILE"])
-        for path in config["DB_PATHS"]:
+        dbConnection = sqlite3.connect(self.db_file)
+        for path in self.db_paths:
             dbConnection.execute(
                 "INSERT OR IGNORE INTO data_rootpath(path) VALUES (?)", (path,)
             )
             for dirpath, dirnames, filenames in os.walk(path):
                 ignore = False
-                if any([dirpath.startswith(i) for i in config["IGNORE_PATHS"]]):
+                if any([dirpath.startswith(i) for i in self.ignore_paths]):
                     print(f"ignoring {dirpath}!")
                     ignore = True
                 if ignore:
@@ -148,7 +152,7 @@ class DatabaseService:
         in the filesystem and delete them from
         the sqlite3 database.
         """
-        dbPath = Path(__file__) / config["DB_FILE"]
+        dbPath = self.db_file
         dbConnection = sqlite3.connect(str(dbPath))
         cleanQuery = """SELECT data_video.id,data_rootpath.path,data_video.path
                         FROM data_video JOIN data_rootpath ON
