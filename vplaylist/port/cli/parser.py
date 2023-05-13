@@ -1,12 +1,11 @@
 from vplaylist.entities.search_video import Webm, Quality, Sorting, SearchType
+from vplaylist.config.config_registry import ConfigRegistry
 import argparse
-
-DEFAULT_LIMIT = 150
-HARD_LIMIT = 300
 
 
 class CliParser:
     def __init__(self):
+        self.config = ConfigRegistry()
         self.parser = argparse.ArgumentParser(description="vplaylist 2nd version")
         self.args = {}
         self._init_parser_commands()
@@ -57,9 +56,9 @@ class CliParser:
             "--limit",
             nargs="?",
             type=int,
-            default=DEFAULT_LIMIT,
+            default=self.config.default_limit,
             dest="limit",
-            help=f"limit number of vids (by default {DEFAULT_LIMIT}",
+            help=f"limit number of vids (by default {self.config.default_limit}",
         )
         self.parser.add_argument(
             "-s",

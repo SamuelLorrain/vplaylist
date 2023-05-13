@@ -26,6 +26,7 @@ app.add_middleware(
 class CreatePlaylistParams(BaseModel):
     webm: Webm = Webm.ALL
     quality: Quality = Quality.ALL.value
+    # FIND a way to add dynamic limit
     limit: conint(ge=1, lt=1000) = 150
     shift: conint(ge=0, lt=1000) = 0
     sorting: Sorting = Sorting.SQL_RANDOM_FUNCTION.value

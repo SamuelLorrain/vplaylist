@@ -1,9 +1,22 @@
 from pathlib import Path
 import os
 import tomllib
-from functool import cached_property
+from functools import cached_property
 
-class ConfigRegistry():
+"""
+put that here because we don't want to expose a
+singleton interface. I only need a singleton for
+the config class...
+FIXME find a better behavior
+"""
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+class ConfigRegistry(metaclass=Singleton):
     def __init__(self):
         self.config_file = Path(os.path.dirname(__file__)) / "../../config.toml"
         if not self.config_file.exists():
@@ -33,7 +46,9 @@ class ConfigRegistry():
 
     @cached_property
     def default_limit(self) -> int:
-        return self.config['default_limit'] if self.config['default_limit'] < self.hard_limit else self.hard_limit
+        default_limit_config = self.config['playlist']['length']['default_limit']
+        hard_limit_config = self.config['playlist']['length']['hard_limit']
+        return default_limit_config if default_limit_config < hard_limit_config else hard_limit_config
 
     @cached_property
     def synonyms(self) -> list[list[str]]:

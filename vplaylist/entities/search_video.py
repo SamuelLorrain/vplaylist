@@ -32,6 +32,7 @@ class SearchType(str, Enum):
 class SearchVideo:
     webm: Webm = field(default=Webm.ALL)
     quality: Quality = field(default=Quality.ALL)
+    # TODO find how to add dynamic default value
     limit: Optional[int] = field(default=150)
     shift: int = field(default=0)
     sorting: Sorting = field(default=Sorting.LAST_BY_DATE_DOWN)
@@ -40,3 +41,4 @@ class SearchVideo:
     should_use_synonyms: bool = field(default=True)
     search_term: str = field(default="")
     search_type: SearchType = field(default=SearchType.BASIC)
+
