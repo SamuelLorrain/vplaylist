@@ -9,13 +9,13 @@ class CliParser:
     def __init__(self):
         self.parser = argparse.ArgumentParser(description="vplaylist 2nd version")
         self.args = {}
-        self._init_parser_config()
+        self._init_parser_commands()
         self.args = vars(self.parser.parse_args())
 
     def get_args(self) -> dict:
         return self.args
 
-    def _init_search_video_parser_config(self) -> None:
+    def _init_search_video_parser_commands(self) -> None:
         self.parser.add_argument(
             "--webm",
             "--only-webm",
@@ -120,7 +120,7 @@ class CliParser:
             help="best based on config",
         )
 
-    def _init_generate_db_parser_config(self) -> None:
+    def _init_generate_db_parser_commands(self) -> None:
         self.parser.add_argument(
             "-g",
             "--generate",
@@ -131,7 +131,7 @@ class CliParser:
             help="generate DB",
         )
 
-    def _init_clean_db_parser_config(self) -> None:
+    def _init_clean_db_parser_commands(self) -> None:
         self.parser.add_argument(
             "--clean-database",
             action="store_const",
@@ -141,7 +141,7 @@ class CliParser:
             help="clean database",
         )
 
-    def _init_config_db_parser_config(self) -> None:
+    def _init_administration_db_parser_commands(self) -> None:
         self.parser.add_argument(
             "--debug",
             action="store_const",
@@ -150,7 +150,7 @@ class CliParser:
             help="show debug informations",
         )
 
-    def _init_parser_config(self) -> None:
-        self._init_search_video_parser_config()
-        self._init_generate_db_parser_config()
-        self._init_clean_db_parser_config()
+    def _init_parser_commands(self) -> None:
+        self._init_search_video_parser_commands()
+        self._init_generate_db_parser_commands()
+        self._init_clean_db_parser_commands()
