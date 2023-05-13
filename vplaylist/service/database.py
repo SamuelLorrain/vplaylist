@@ -5,12 +5,29 @@ import json
 import re
 import subprocess
 import datetime
+from dataclasses import dataclass
+from uuid import UUID
 
 # FIXME
-config = {"DB_FILE": ""}
+config = {"DB_FILE": "./db.sqlite3"}
 
+@dataclass
+class VideoPath:
+    rootpath: Path
+    path: Path
 
 class DatabaseService:
+    def fetch_video_from_uuid(self, uuid: UUID) -> VideoPath:
+        db_connection = sqlite3.connect(config["DB_FILE"])
+        cursor = db_connection.execute("""
+            select data_rootpath.path, data_video.path
+            from data_video
+            join data_rootpath on data_video.rootpath_id = data_rootpath.id
+            where uuid = ?
+        """, (str(uuid),))
+        result = cursor.fetchone()
+        return VideoPath(rootpath=Path(result[0]), path=Path(result[1]))
+
     def insert_new_elements_in_database(self):
         """Insert data to the database based on DB_PATHS config variable"""
 
