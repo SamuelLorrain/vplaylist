@@ -47,6 +47,7 @@ class CreatePlaylistService:
             .add_select("height")
             .add_select("width")
             .add_select("date_down")
+            .add_select("uuid")
             .add_join("data_rootpath", "data_video.rootpath_id = data_rootpath.id")
             .add_where_clause(get_query_for_webm(self.search.webm))
             .add_where_clause(get_query_for_quality(self.search.quality))
@@ -107,6 +108,7 @@ class CreatePlaylistService:
                 height=i[2],
                 width=i[3],
                 date_down=i[4],
+                uuid=i[5],
             )
             for i in query_result
         ]

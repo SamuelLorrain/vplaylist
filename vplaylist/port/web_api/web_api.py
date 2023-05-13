@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from vplaylist.entities.search_video import SearchVideo
 from vplaylist.actions.create_playlist import create_playlist
 from pydantic import BaseModel, conint
@@ -6,6 +7,16 @@ from typing import Literal
 from vplaylist.entities.search_video import Webm, Quality, Sorting, SearchType
 
 app = FastAPI()
+
+origins = ["http://localhost:5173"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class CreatePlaylistParams(BaseModel):
@@ -20,6 +31,15 @@ class CreatePlaylistParams(BaseModel):
     search_type: SearchType = SearchType.BASIC.value
 
 
+class VideoResponse(BaseModel):
+    path: str = ""
+    uuid: str = ""
+
+
+class CreatePlaylistResponse(BaseModel):
+    playlist: list[VideoResponse] = []
+
+
 @app.get("/playlist/create")
 async def create_playlist_controller(
     create_playlist_params: CreatePlaylistParams = Depends(),
@@ -27,7 +47,8 @@ async def create_playlist_controller(
     search_video = SearchVideo(**dict(create_playlist_params))
     print(search_video)
     playlist = create_playlist(search_video)
-    return playlist
+    video_list = [VideoResponse(path=i.path, uuid=i.uuid) for i in playlist.playlist]
+    return CreatePlaylistResponse(playlist=video_list)
 
 
 @app.get("/playlist/clean")

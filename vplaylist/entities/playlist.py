@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List
 
 
 @dataclass
@@ -14,6 +13,7 @@ class Video:
     rootpath: RootPath = field(repr=False)
     height: int
     width: int
+    uuid: str = field(default='')
     name: str = field(default=None)
     film: str = field(default=None)
     date_down: int = field(default=None)
@@ -30,4 +30,4 @@ class Video:
 
 @dataclass
 class Playlist:
-    playlist: List[Video]
+    playlist: list[Video]
