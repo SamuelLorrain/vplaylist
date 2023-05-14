@@ -1,5 +1,5 @@
-from vplaylist.entities.search_video import SearchVideo
 from vplaylist.entities.playlist import Playlist
+from vplaylist.entities.search_video import SearchVideo
 from vplaylist.service.create_playlist_service import CreatePlaylistService
 
 

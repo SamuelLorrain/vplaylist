@@ -1,13 +1,14 @@
-from vplaylist.entities.playlist import Playlist
 from tempfile import NamedTemporaryFile
+
+from vplaylist.entities.playlist import Playlist
 from vplaylist.service.player import PlayerMPV
 
 
 class PlayPlaylistService:
-    def __init__(self, playlist: Playlist):
+    def __init__(self, playlist: Playlist) -> None:
         self.playlist = playlist
 
-    def play_playlist(self):
+    def play_playlist(self) -> None:
         if len(self.playlist.playlist) < 1:
             print("Empty playlist!")
 

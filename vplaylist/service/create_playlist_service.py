@@ -1,43 +1,43 @@
-from vplaylist.entities.search_video import (
-    SearchVideo,
-    Sorting,
-    SearchType,
-)
-from vplaylist.entities.playlist import (
-    Playlist,
-    Video,
-    RootPath,
+import random
+import sqlite3
+from typing import Iterable
+
+from vplaylist.config.config_registry import ConfigRegistry
+from vplaylist.entities.playlist import Playlist, RootPath, Video
+from vplaylist.entities.search_video import SearchType, SearchVideo, Sorting
+from vplaylist.utils.db_utils import (  # is_safe_term_search to import when usable
+    get_query_for_quality,
+    get_query_for_sorting,
+    get_query_for_webm,
 )
 from vplaylist.utils.query_constructor import QueryConstructor
-from vplaylist.utils.db_utils import (
-    get_query_for_webm,
-    get_query_for_quality,
-    is_safe_term_search,
-    get_query_for_sorting,
-)
 from vplaylist.utils.regex_utils import (
-    synonyms_from_terms,
-    regexp_permutate,
     basic_regexp,
     regexp_alternative_from_list,
+    regexp_permutate,
+    synonyms_from_terms,
 )
-from vplaylist.config.config_registry import ConfigRegistry
-import sqlite3
-import random
+
 
 class CreatePlaylistService:
-    def __init__(self, search: SearchVideo):
+    def __init__(self, search: SearchVideo) -> None:
         self.search = search
-        self.query = None
+        self.query: QueryConstructor
         self.config_registry = ConfigRegistry()
-        self.config_best = self.config_registry.best
+        self.best = self.config_registry.best
+        # limit rules
+        self.limit = search.limit
+        if not self.limit:
+            self.limit = self.config_registry.default_limit
+        if self.limit > self.config_registry.hard_limit:
+            self.limit = self.config_registry.hard_limit
 
     def create_playlist(self) -> Playlist:
         self.query = self._convert_search_to_query()
         query_result = self._execute_query()
         return self._format_query_result_to_playlist(query_result)
 
-    def _convert_search_to_query(self) -> str:
+    def _convert_search_to_query(self) -> QueryConstructor:
         # base query
         query = QueryConstructor("data_video")
         query = (
@@ -52,20 +52,21 @@ class CreatePlaylistService:
             .add_where_clause(get_query_for_quality(self.search.quality))
         )
 
-        if self.search.limit is not None:
-            query.change_limit_clause(self.search.limit + self.search.shift)
+        # handle limit
+        query.change_limit_clause(self.limit + self.search.shift)
+
         if self.search.sorting != Sorting.ON_RAM_RANDOMIZE:
             query.change_order_clause(get_query_for_sorting(self.search.sorting))
         self._compute_search_term(query)
 
         return query
 
-    def _compute_search_term(self, query) -> QueryConstructor:
+    def _compute_search_term(self, query: QueryConstructor) -> QueryConstructor:
         match self.search.search_type:
             case SearchType.NO_SEARCH:
                 pass
             case SearchType.BEST:
-                best_reg = regexp_alternative_from_list(self.config_best)
+                best_reg = regexp_alternative_from_list(self.best)
                 query = query.add_where_clause("data_video.path REGEXP ?")
                 query = query.add_param(best_reg)
             case SearchType.BASIC:
@@ -81,7 +82,7 @@ class CreatePlaylistService:
                 query = query.add_where_clause("data_video.path REGEXP ?")
         return query
 
-    def _execute_query(self):
+    def _execute_query(self) -> Iterable:
         # FIXME put all the connection login in another service
         self.conn = sqlite3.connect("db.sqlite3")
         self.conn.create_function("REGEXP", 2, basic_regexp)
@@ -99,7 +100,7 @@ class CreatePlaylistService:
             query_result = random.sample(query_result, k=len(query_result))
         return query_result
 
-    def _format_query_result_to_playlist(self, query_result) -> Playlist:
+    def _format_query_result_to_playlist(self, query_result: Iterable) -> Playlist:
         video_playlist = [
             Video(
                 rootpath=RootPath(path=i[0]),

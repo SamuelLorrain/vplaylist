@@ -1,13 +1,18 @@
-from fastapi import FastAPI, Depends, Request
+from uuid import UUID
+
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
 from vplaylist.actions.create_playlist import create_playlist
 from vplaylist.actions.fetch_playable_video import fetch_playable_video
-from pydantic import BaseModel, conint
-from typing import Literal
-from vplaylist.entities.search_video import SearchVideo, Webm, Quality, Sorting, SearchType
-from vplaylist.entities.video_file import PlayableVideo
-from uuid import UUID
-from fastapi.responses import StreamingResponse
+from vplaylist.entities.search_video import (
+    Quality,
+    SearchType,
+    SearchVideo,
+    Sorting,
+    Webm,
+)
 from vplaylist.utils.custom_response import VideoStreamResponse
 
 app = FastAPI()
@@ -25,15 +30,14 @@ app.add_middleware(
 
 class CreatePlaylistParams(BaseModel):
     webm: Webm = Webm.ALL
-    quality: Quality = Quality.ALL.value
-    # FIND a way to add dynamic limit
-    limit: conint(ge=1, lt=1000) = 150
-    shift: conint(ge=0, lt=1000) = 0
-    sorting: Sorting = Sorting.SQL_RANDOM_FUNCTION.value
+    quality: Quality = Quality.ALL
+    limit: int = 150
+    shift: int = 0
+    sorting: Sorting = Sorting.SQL_RANDOM_FUNCTION
     should_permutate: bool = True
     should_use_synonyms: bool = True
     search_term: str = ""
-    search_type: SearchType = SearchType.BASIC.value
+    search_type: SearchType = SearchType.BASIC
 
 
 class VideoResponse(BaseModel):
@@ -47,8 +51,8 @@ class CreatePlaylistResponse(BaseModel):
 
 @app.get("/playlist/create")
 async def create_playlist_controller(
-    create_playlist_params: CreatePlaylistParams = Depends(),
-):
+    create_playlist_params: CreatePlaylistParams = Depends(),  # noqa: B008
+) -> CreatePlaylistResponse:
     search_video = SearchVideo(**dict(create_playlist_params))
     playlist = create_playlist(search_video)
 
@@ -58,19 +62,21 @@ async def create_playlist_controller(
     ]
     return CreatePlaylistResponse(playlist=video_list)
 
-@app.get('/video/{uuid}')
-async def play_video(uuid: UUID, req: Request):
+
+@app.get("/video/{uuid}")
+async def play_video(uuid: UUID, req: Request) -> VideoStreamResponse:
     playable_video = fetch_playable_video(uuid)
     if not playable_video:
-        return "Not Found"
+        raise HTTPException(status_code=404, detail="Not Found")
     return VideoStreamResponse(playable_video, range_asked=req.headers.get("Range"))
 
 
-@app.get("/playlist/clean")
-async def clean_playlist_controller():
-    pass
+# TODO implement
+# @app.get("/playlist/clean")
+# async def clean_playlist_controller():
+#     pass
 
 
-@app.get("/playlist/update")
-async def update_playlist_controller():
-    pass
+# @app.get("/playlist/update")
+# async def update_playlist_controller():
+#     pass

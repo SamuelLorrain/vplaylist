@@ -1,20 +1,22 @@
-import mpv
 import subprocess
 from abc import ABC, abstractmethod
+from typing import IO, AnyStr
+
+import mpv  # type: ignore
 
 
 class Player(ABC):
     @abstractmethod
-    def __init__(self, playlist):
+    def __init__(self, playlist: IO[AnyStr]) -> None:
         pass
 
     @abstractmethod
-    def launch_playlist(self):
+    def launch_playlist(self) -> None:
         pass
 
 
 class PlayerMPV:
-    def __init__(self, playlist):
+    def __init__(self, playlist: IO[str]) -> None:
         self.player = mpv.MPV(
             log_handler=self.log_handler,
             input_default_bindings=True,
@@ -27,40 +29,40 @@ class PlayerMPV:
         self._init_events()
         self.player.loadlist(playlist.name)
 
-    def log_handler(self, loglevel, component, message):
+    def log_handler(self, loglevel: str, component: str, message: str) -> None:
         print(f"[{loglevel}] {component}: {message}")
 
-    def _init_key_press(self):
+    def _init_key_press(self) -> None:
         # TODO maybe events to handle
         # things in database (add infos
         # on the fly etc. ?)
         @self.player.on_key_press("WHEEL_UP")
-        def wheel_up_binding():
+        def wheel_up_binding() -> None:
             self.player.volume += 2
             print(self.player.volume)
 
         @self.player.on_key_press("WHEEL_DOWN")
-        def wheel_down_binding():
+        def wheel_down_binding() -> None:
             self.player.volume -= 2
             print(self.player.volume)
 
         @self.player.on_key_press(">")
-        def right_arrow_pressed():
+        def right_arrow_pressed() -> None:
             self.player.playlist_next()
 
         @self.player.on_key_press("<")
-        def left_arrow_pressed():
+        def left_arrow_pressed() -> None:
             self.player.playlist_prev()
 
         @self.player.on_key_press("l")
-        def l_pressed():
+        def l_pressed() -> None:
             self.player.seek(10)
 
         @self.player.on_key_press("j")
-        def j_pressed():
+        def j_pressed() -> None:
             self.player.seek(-10)
 
-    def _init_events(self):
+    def _init_events(self) -> None:
         # TODO make an event
         # to know if a video is read
         # (if there is a playing of the same
@@ -68,7 +70,7 @@ class PlayerMPV:
         # file as read, and put that in the database)
         pass
 
-    def launch_playlist(self):
+    def launch_playlist(self) -> None:
         while True:
             try:
                 self.player.wait_for_playback()
@@ -78,13 +80,13 @@ class PlayerMPV:
                 del self.player
                 exit(1)
 
-    def __del__(self):
+    def __del__(self) -> None:
         del self.player
 
 
 class PlayerVLC:
-    def __init__(self, playlist):
-        self.playlist = playlist
+    def __init__(self, playlist: IO[str]) -> None:
+        self.playlist: IO[str] = playlist
 
-    def launch_playlist(self):
+    def launch_playlist(self) -> None:
         subprocess.run(["vlc", self.playlist.name])

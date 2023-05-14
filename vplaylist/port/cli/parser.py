@@ -1,17 +1,18 @@
-from vplaylist.entities.search_video import Webm, Quality, Sorting, SearchType
-from vplaylist.config.config_registry import ConfigRegistry
 import argparse
+from typing import Any
+
+from vplaylist.config.config_registry import ConfigRegistry
+from vplaylist.entities.search_video import Quality, SearchType, Sorting, Webm
 
 
 class CliParser:
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = ConfigRegistry()
         self.parser = argparse.ArgumentParser(description="vplaylist 2nd version")
-        self.args = {}
         self._init_parser_commands()
-        self.args = vars(self.parser.parse_args())
+        self.args: dict[str, Any] = vars(self.parser.parse_args())
 
-    def get_args(self) -> dict:
+    def get_args(self) -> dict[str, Any]:
         return self.args
 
     def _init_search_video_parser_commands(self) -> None:

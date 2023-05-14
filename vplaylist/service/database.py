@@ -1,21 +1,24 @@
-import os
-import sqlite3
-from pathlib import Path
-import json
-import re
-import subprocess
 import datetime
+import json
+import os
+import re
+import sqlite3
+import subprocess
 from dataclasses import dataclass
+from pathlib import Path
 from uuid import UUID
+
 from vplaylist.config.config_registry import ConfigRegistry
+
 
 @dataclass
 class VideoPath:
     rootpath: Path
     path: Path
 
+
 class DatabaseService:
-    def __init__(self):
+    def __init__(self) -> None:
         self.config_registry = ConfigRegistry()
         self.db_file = self.config_registry.db_file
         self.db_paths = self.config_registry.db_paths
@@ -23,19 +26,24 @@ class DatabaseService:
 
     def fetch_video_from_uuid(self, uuid: UUID) -> VideoPath:
         db_connection = sqlite3.connect(self.db_file)
-        cursor = db_connection.execute("""
+        cursor = db_connection.execute(
+            """
             select data_rootpath.path, data_video.path
             from data_video
             join data_rootpath on data_video.rootpath_id = data_rootpath.id
             where uuid = ?
-        """, (str(uuid),))
+        """,
+            (str(uuid),),
+        )
         result = cursor.fetchone()
         return VideoPath(rootpath=Path(result[0]), path=Path(result[1]))
 
-    def insert_new_elements_in_database(self):
+    def insert_new_elements_in_database(self) -> bool:
         """Insert data to the database based on DB_PATHS config variable"""
 
-        def get_key_from_list_of_dict(lst, key):
+        def get_key_from_list_of_dict(
+            lst: list[dict[str, str]], key: str
+        ) -> str | None:
             for i in lst:
                 if i.get(key):
                     return i.get(key)
@@ -48,9 +56,9 @@ class DatabaseService:
             dbConnection.execute(
                 "INSERT OR IGNORE INTO data_rootpath(path) VALUES (?)", (path,)
             )
-            for dirpath, dirnames, filenames in os.walk(path):
+            for dirpath, _, filenames in os.walk(path):
                 ignore = False
-                if any([dirpath.startswith(i) for i in self.ignore_paths]):
+                if any([dirpath.startswith(str(i)) for i in self.ignore_paths]):
                     print(f"ignoring {dirpath}!")
                     ignore = True
                 if ignore:
@@ -66,14 +74,14 @@ class DatabaseService:
                     ):
                         files.append(
                             (
-                                os.path.join(dirpath, filename).replace(path, ""),
+                                os.path.join(dirpath, filename).replace(str(path), ""),
                                 path,
                                 os.path.getmtime(os.path.join(dirpath, filename)),
                             )
                         )
 
         for filename, path, date in files:
-            date = datetime.fromtimestamp(date).strftime("%Y-%m-%d")
+            formatted_date = datetime.date.fromtimestamp(date).strftime("%Y-%m-%d")
             if (
                 dbConnection.execute(
                     "SELECT id FROM data_video WHERE path = ?", (filename,)
@@ -90,7 +98,7 @@ class DatabaseService:
                         "stream=width,height",
                         "-of",
                         "json",
-                        path + filename,
+                        path / filename,
                     ],
                     stdout=subprocess.PIPE,
                 )
@@ -120,7 +128,7 @@ class DatabaseService:
                         SELECT id,?,?,?,? FROM data_rootpath WHERE path = ?""",
                         (
                             filename,
-                            date,
+                            formatted_date,
                             height,
                             width,
                             path,
@@ -137,7 +145,7 @@ class DatabaseService:
                         SELECT id,?,? FROM rootpath WHERE path = ?""",
                         (
                             filename,
-                            date,
+                            formatted_date,
                             path,
                         ),
                     )
@@ -145,7 +153,7 @@ class DatabaseService:
         dbConnection.close()
         return True
 
-    def delete_non_existing_files_from_database(self):
+    def delete_non_existing_files_from_database(self) -> bool:
         """Clean the database
 
         Check for all the video that doesn't exists

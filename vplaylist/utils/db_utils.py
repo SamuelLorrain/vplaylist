@@ -1,8 +1,9 @@
 import string
-from vplaylist.entities.search_video import Webm, Quality, Sorting
+
+from vplaylist.entities.search_video import Quality, Sorting, Webm
 
 
-def is_safe_term_search(expr: str):
+def is_safe_term_search(expr: str) -> bool:
     """
     Check wether an expression is safe for orm purpose
     """
@@ -12,7 +13,7 @@ def is_safe_term_search(expr: str):
     return True
 
 
-def get_query_for_webm(webm: Webm):
+def get_query_for_webm(webm: Webm) -> str:
     match (webm):
         case Webm.NO_WEBM:
             return "data_video.path NOT LIKE '%webm'"
@@ -22,7 +23,7 @@ def get_query_for_webm(webm: Webm):
             return ""
 
 
-def get_query_for_quality(quality: Quality):
+def get_query_for_quality(quality: Quality) -> str:
     match (quality):
         case Quality.ONLY_SD:
             return "width < 800 AND height < 600"

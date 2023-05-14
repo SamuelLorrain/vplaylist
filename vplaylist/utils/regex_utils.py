@@ -1,13 +1,15 @@
-import re
 import itertools
+import re
+
 from vplaylist.config.config_registry import ConfigRegistry
 
-def basic_regexp(expr: str, item) -> bool:
+
+def basic_regexp(expr: str, item: str) -> bool:
     reg = re.compile(expr, re.IGNORECASE)
     return reg.search(item) is not None
 
 
-def regexp_permutate(expr) -> str:
+def regexp_permutate(expr: str) -> str:
     reg = ""
     for i in itertools.permutations(expr.split()):
         reg += "("
