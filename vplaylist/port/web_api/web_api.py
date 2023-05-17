@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -69,7 +69,6 @@ async def play_video(uuid: UUID, req: Request) -> VideoStreamResponse:
     if not playable_video:
         raise HTTPException(status_code=404, detail="Not Found")
     return VideoStreamResponse(playable_video, range_asked=req.headers.get("Range"))
-
 
 # TODO implement
 # @app.get("/playlist/clean")

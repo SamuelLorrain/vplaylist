@@ -6,7 +6,7 @@ import sqlite3
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from vplaylist.config.config_registry import ConfigRegistry
 
@@ -15,6 +15,14 @@ from vplaylist.config.config_registry import ConfigRegistry
 class VideoPath:
     rootpath: Path
     path: Path
+
+@dataclass
+class VideoPathFromFileSystem:
+    rootpath: Path
+    fullpath: Path
+    dirpath: Path
+    filename_without_rootpath: Path
+    timestamp: float
 
 
 class DatabaseService:
@@ -38,30 +46,22 @@ class DatabaseService:
         result = cursor.fetchone()
         return VideoPath(rootpath=Path(result[0]), path=Path(result[1]))
 
-    def insert_new_elements_in_database(self) -> bool:
-        """Insert data to the database based on DB_PATHS config variable"""
-
-        def get_key_from_list_of_dict(
-            lst: list[dict[str, str]], key: str
-        ) -> str | None:
-            for i in lst:
-                if i.get(key):
-                    return i.get(key)
-            return None
-
-        files = []
-        # TODO put connection low level logic in another service
-        dbConnection = sqlite3.connect(self.db_file)
+    def add_rootpath_from_list(root_paths) -> None:
+        db_connection = sqlite3.connect(self.db_file)
         for path in self.db_paths:
-            dbConnection.execute(
-                "INSERT OR IGNORE INTO data_rootpath(path) VALUES (?)", (path,)
+            db_connection.execute(
+                "INSERT OR IGNORE INTO data_rootpath(path) VALUES (?)", (str(path),)
             )
-            for dirpath, _, filenames in os.walk(path):
-                ignore = False
+        db_connection.commit()
+        db_connection.close()
+
+    # TODO put in a "filesystem service" ?
+    def get_video_from_filesystem_list(self) -> list:
+        files = []
+        for rootpath in self.db_paths:
+            for dirpath, _, filenames in os.walk(str(rootpath)):
                 if any([dirpath.startswith(str(i)) for i in self.ignore_paths]):
                     print(f"ignoring {dirpath}!")
-                    ignore = True
-                if ignore:
                     break
                 for filename in filenames:
                     if (
@@ -72,23 +72,42 @@ class DatabaseService:
                         )
                         is not None
                     ):
+                        fullpath = Path(os.path.join(dirpath, filename))
+                        filename_without_rootpath = Path(str(fullpath).replace(str(rootpath) + "/", ""))
                         files.append(
-                            (
-                                os.path.join(dirpath, filename).replace(str(path), ""),
-                                path,
-                                os.path.getmtime(os.path.join(dirpath, filename)),
+                            VideoPathFromFileSystem(
+                                fullpath=fullpath,
+                                rootpath=Path(rootpath),
+                                dirpath=Path(dirpath),
+                                filename_without_rootpath=filename_without_rootpath,
+                                timestamp=os.path.getmtime(os.path.join(dirpath, filename)),
                             )
                         )
+        return files
 
-        for filename, path, date in files:
-            formatted_date = datetime.date.fromtimestamp(date).strftime("%Y-%m-%d")
+    def insert_new_elements_in_database(self, files: list[VideoPathFromFileSystem]) -> bool:
+        """Insert data to the database based on DB_PATHS config variable"""
+
+        def get_key_from_list_of_dict(
+            lst: list[dict[str, str]], key: str
+        ) -> str | None:
+            for i in lst:
+                if i.get(key):
+                    return i.get(key)
+            return None
+
+        db_connection = sqlite3.connect(self.db_file)
+        for file in files:
+            formatted_date = datetime.date.fromtimestamp(file.timestamp).strftime("%Y-%m-%d")
             if (
-                dbConnection.execute(
-                    "SELECT id FROM data_video WHERE path = ?", (filename,)
+                db_connection.execute(
+                    "SELECT id FROM data_video WHERE path = ?", (str(file.filename_without_rootpath),)
                 ).fetchone()
                 is None
             ):
-                print("insert {}".format(filename))
+                print("insert {}".format(file.filename_without_rootpath))
+                print(formatted_date)
+                print(str(file.rootpath))
                 ffProbe = subprocess.Popen(
                     [
                         "ffprobe",
@@ -98,7 +117,7 @@ class DatabaseService:
                         "stream=width,height",
                         "-of",
                         "json",
-                        path / filename,
+                        str(file.fullpath),
                     ],
                     stdout=subprocess.PIPE,
                 )
@@ -116,41 +135,45 @@ class DatabaseService:
                 )
 
                 if width and height:
-                    dbConnection.execute(
+                    db_connection.execute(
                         """
-                        INSERT OR IGNORE INTO data_video(
+                        INSERT INTO data_video(
                             rootpath_id,
                             path,
                             date_down,
                             height,
-                            width
+                            width,
+                            uuid
                         )
-                        SELECT id,?,?,?,? FROM data_rootpath WHERE path = ?""",
+                        SELECT id,?,?,?,?,? FROM data_rootpath WHERE path = ?""",
                         (
-                            filename,
+                            str(file.filename_without_rootpath),
                             formatted_date,
                             height,
                             width,
-                            path,
+                            str(uuid4()),
+                            str(file.rootpath) + '/'
                         ),
                     )
                 else:
-                    dbConnection.execute(
+                    db_connection.execute(
                         """
-                        INSERT OR IGNORE INTO data_video(
+                        INSERT INTO data_video(
                             rootpath_id,
                             path,
                             date_down,
+                            uuid
                         )
-                        SELECT id,?,? FROM rootpath WHERE path = ?""",
+                        SELECT id,?,?,? FROM data_rootpath WHERE path = ?""",
                         (
-                            filename,
+                            str(file.filename_without_rootpath),
                             formatted_date,
-                            path,
+                            str(uuid4()),
+                            str(file.rootpath) + '/'
                         ),
                     )
-        dbConnection.commit()
-        dbConnection.close()
+        db_connection.commit()
+        db_connection.close()
         return True
 
     def delete_non_existing_files_from_database(self) -> bool:
@@ -160,18 +183,16 @@ class DatabaseService:
         in the filesystem and delete them from
         the sqlite3 database.
         """
-        dbPath = self.db_file
-        dbConnection = sqlite3.connect(str(dbPath))
-        cleanQuery = """SELECT data_video.id,data_rootpath.path,data_video.path
+        db_connection = sqlite3.connect(str(self.db_file))
+        clean_query = """SELECT data_video.id,data_rootpath.path,data_video.path
                         FROM data_video JOIN data_rootpath ON
                         data_video.rootpath_id = data_rootpath.id"""
-        for videorowid, rootpath, videopath in dbConnection.execute(cleanQuery):
-            if not os.path.exists(rootpath + videopath):
-                print("Video {} doesn't exists".format(rootpath + videopath))
-                dbConnection.execute(
-                    "DELETE FROM data_video WHERE id = ?", (videorowid,)
+        for video_rowid, rootpath, video_path in db_connection.execute(clean_query):
+            if not os.path.exists(rootpath + video_path):
+                print("Video {} doesn't exists".format(rootpath + video_path))
+                db_connection.execute(
+                    "DELETE FROM data_video WHERE id = ?", (video_rowid,)
                 )
-
-        dbConnection.commit()
-        dbConnection.close()
+        db_connection.commit()
+        db_connection.close()
         return True

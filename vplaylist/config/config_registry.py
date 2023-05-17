@@ -1,4 +1,5 @@
 import os
+import sqlite3
 import tomllib
 from functools import cached_property
 from pathlib import Path
@@ -46,7 +47,7 @@ class ConfigRegistry(metaclass=Singleton):
 
     @cached_property
     def hard_limit(self) -> int:
-        hard_limit = self.config["hard_limit"]
+        hard_limit = self.config.get("hard_limit")
         if isinstance(hard_limit, int):
             return hard_limit
         return 1500
@@ -71,4 +72,6 @@ class ConfigRegistry(metaclass=Singleton):
 
     @cached_property
     def best(self) -> list[str]:
-        return self.config["search"]["best"]
+        connection = sqlite3.connect(self.db_file)
+        cursor = connection.execute("select * from data_best_search")
+        return [search_term[0] for search_term in cursor.fetchall()]

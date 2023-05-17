@@ -7,7 +7,7 @@ from vplaylist.entities.video_file import PlayableVideo
 
 
 class VideoStreamResponse(StreamingResponse):
-    BYTES_PER_RESPONSE = 100000
+    BYTES_PER_RESPONSE = 500000
 
     def _chunk_generator_from_stream(
         self, stream: FileIO, chunk_size: int, start: int, size: int
