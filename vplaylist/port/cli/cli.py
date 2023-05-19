@@ -1,9 +1,9 @@
-from vplaylist.actions.clean_database import clean_database
+from vplaylist.actions.clean_collection import clean_collection
 from vplaylist.actions.create_playlist import create_playlist
-from vplaylist.actions.update_database import update_database
+from vplaylist.actions.update_collection import update_collection
 from vplaylist.entities.search_video import SearchVideo
 from vplaylist.port.cli.parser import CliParser
-from vplaylist.service.play_playlist_service import PlayPlaylistService
+from vplaylist.services.play_playlist_service import PlayPlaylistService
 
 
 class Cli:
@@ -15,21 +15,21 @@ class Cli:
 
     def route_args(self) -> None:
         if self.args["generate"]:
-            self.generate_database_controller()
+            self.update_collection_controller()
         if self.args["clean_database"]:
-            self.clean_database_controller()
+            self.clean_collection_controller()
         else:
             self.create_playlist_controller()
 
-    def generate_database_controller(self) -> None:
-        is_successfully_updated = update_database()
+    def update_collection_controller(self) -> None:
+        is_successfully_updated = update_collection()
         if is_successfully_updated:
             print("database successfully generated!")
         else:
             print("error while generate database!")
 
-    def clean_database_controller(self) -> None:
-        is_successfully_cleaned = clean_database()
+    def clean_collection_controller(self) -> None:
+        is_successfully_cleaned = clean_collection()
         if is_successfully_cleaned:
             print("database successfully cleaned!")
         else:

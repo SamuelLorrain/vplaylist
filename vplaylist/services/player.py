@@ -2,6 +2,8 @@ import subprocess
 from abc import ABC, abstractmethod
 from typing import IO, AnyStr
 
+# TODO instead of type ignore, may create our own stub
+# file
 import mpv  # type: ignore
 
 
@@ -36,29 +38,29 @@ class PlayerMPV:
         # TODO maybe events to handle
         # things in database (add infos
         # on the fly etc. ?)
-        @self.player.on_key_press("WHEEL_UP")
+        @self.player.on_key_press("WHEEL_UP")  # type: ignore
         def wheel_up_binding() -> None:
             self.player.volume += 2
             print(self.player.volume)
 
-        @self.player.on_key_press("WHEEL_DOWN")
+        @self.player.on_key_press("WHEEL_DOWN")  # type: ignore
         def wheel_down_binding() -> None:
             self.player.volume -= 2
             print(self.player.volume)
 
-        @self.player.on_key_press(">")
+        @self.player.on_key_press(">")  # type: ignore
         def right_arrow_pressed() -> None:
             self.player.playlist_next()
 
-        @self.player.on_key_press("<")
+        @self.player.on_key_press("<")  # type: ignore
         def left_arrow_pressed() -> None:
             self.player.playlist_prev()
 
-        @self.player.on_key_press("l")
+        @self.player.on_key_press("l")  # type: ignore
         def l_pressed() -> None:
             self.player.seek(10)
 
-        @self.player.on_key_press("j")
+        @self.player.on_key_press("j")  # type: ignore
         def j_pressed() -> None:
             self.player.seek(-10)
 

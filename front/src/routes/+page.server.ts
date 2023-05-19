@@ -1,8 +1,6 @@
-import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ url }) => {
-    let playlist;
     let fetchUrl : URL = new URL('http://127.0.0.1:8000/playlist/create')
     for(let [key,value] of url.searchParams) {
         if (key === 'best' && value === 'true') {

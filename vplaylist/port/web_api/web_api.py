@@ -1,11 +1,11 @@
 from uuid import UUID
 
-from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from vplaylist.actions.create_playlist import create_playlist
-from vplaylist.actions.fetch_playable_video import fetch_playable_video
+from vplaylist.actions.fetch_video import fetch_video
 from vplaylist.entities.search_video import (
     Quality,
     SearchType,
@@ -13,7 +13,7 @@ from vplaylist.entities.search_video import (
     Sorting,
     Webm,
 )
-from vplaylist.utils.custom_response import VideoStreamResponse
+from vplaylist.port.web_api.responses.video_stream_response import VideoStreamResponse
 
 app = FastAPI()
 
@@ -56,26 +56,13 @@ async def create_playlist_controller(
     search_video = SearchVideo(**dict(create_playlist_params))
     playlist = create_playlist(search_video)
 
-    video_list = [
-        VideoResponse(path=i.path.split("/")[-1], uuid=i.uuid)
-        for i in playlist.playlist
-    ]
+    video_list = [VideoResponse(path=str(i.path), uuid=str(i.uuid)) for i in playlist]
     return CreatePlaylistResponse(playlist=video_list)
 
 
 @app.get("/video/{uuid}")
 async def play_video(uuid: UUID, req: Request) -> VideoStreamResponse:
-    playable_video = fetch_playable_video(uuid)
+    playable_video = fetch_video(uuid)
     if not playable_video:
         raise HTTPException(status_code=404, detail="Not Found")
     return VideoStreamResponse(playable_video, range_asked=req.headers.get("Range"))
-
-# TODO implement
-# @app.get("/playlist/clean")
-# async def clean_playlist_controller():
-#     pass
-
-
-# @app.get("/playlist/update")
-# async def update_playlist_controller():
-#     pass
