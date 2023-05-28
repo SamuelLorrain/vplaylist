@@ -1,0 +1,12 @@
+# TODO
+- provide tags via db
+- rename video via db
+- use websocket to handle changes
+- find how to serve on localhost
+- use migrations (alembic?)
+- analytics
+- video details via db
+- theming
+- add .env and stuffs
+- unit tests
+- auto advance video (auto-discovery)

@@ -25,7 +25,11 @@
             } else if (e.key === '<') {
                 previousVideoCallback();
             } else if (e.key === 'f') {
-                videoElement.requestFullScreen();
+                if (!document.fullScreenElement) {
+                    videoElement.requestFullscreen();
+                } else {
+                    videoElement.exitFullscreen();
+                }
             }
         });
 
@@ -37,22 +41,7 @@
 </script>
 
 <div>
-    <div class="video-container">
-        <video bind:this={videoElement} controls src={src} height="600" autoplay/>
+    <div class="bg-black flex justify-center">
+        <video bind:this={videoElement} controls src={src} height="600" width="1000" autoplay/>
     </div>
-    <div class="video-title">{currentVideo.path}</div>
 </div>
-
-<style>
-.video-container {
-    display:flex;
-    justify-content:center;
-    border: 1px solid black;
-    background-color: black;
-}
-
-.video-title {
-    text-align: center;
-    margin-bottom: 1rem;
-}
-</style>

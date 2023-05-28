@@ -1,11 +1,16 @@
+from typing import Optional
 from uuid import UUID
+from datetime import date
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from vplaylist.actions.create_playlist import create_playlist
 from vplaylist.actions.fetch_video import fetch_video
+# TODO maybe use crud/Rest syntax instead of 2 different actions
+from vplaylist.actions.fetch_video_details import fetch_video_details
+from vplaylist.actions.patch_video_details import modify_video_details
 from vplaylist.entities.search_video import (
     Quality,
     SearchType,
@@ -13,6 +18,11 @@ from vplaylist.entities.search_video import (
     Sorting,
     Webm,
 )
+from vplaylist.port.web_api.responses.create_playlist_response import (
+    CreatePlaylistResponse,
+    VideoResponse,
+)
+from vplaylist.port.web_api.responses.video_details_response import VideoDetailsResponse
 from vplaylist.port.web_api.responses.video_stream_response import VideoStreamResponse
 
 app = FastAPI()
@@ -40,15 +50,6 @@ class CreatePlaylistParams(BaseModel):
     search_type: SearchType = SearchType.BASIC
 
 
-class VideoResponse(BaseModel):
-    path: str = ""
-    uuid: str = ""
-
-
-class CreatePlaylistResponse(BaseModel):
-    playlist: list[VideoResponse] = []
-
-
 @app.get("/playlist/create")
 async def create_playlist_controller(
     create_playlist_params: CreatePlaylistParams = Depends(),  # noqa: B008
@@ -66,3 +67,24 @@ async def play_video(uuid: UUID, req: Request) -> VideoStreamResponse:
     if not playable_video:
         raise HTTPException(status_code=404, detail="Not Found")
     return VideoStreamResponse(playable_video, range_asked=req.headers.get("Range"))
+
+
+@app.get("/video/{uuid}/details")
+async def get_video_details(uuid: UUID) -> VideoDetailsResponse:
+    video_details = fetch_video_details(uuid)
+    return video_details
+
+
+class VideoDetailsParams(BaseModel):
+    name: Optional[str]
+    date_down: Optional[date]
+
+
+@app.put("/video/{uuid}/details")
+async def patch_video_details(
+        uuid: UUID,
+        video_details_params: VideoDetailsParams) -> Response:
+    print(uuid)
+    print(video_details_params)
+    modify_video_details(uuid)
+    return Response("", status_code=201)

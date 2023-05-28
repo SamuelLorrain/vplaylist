@@ -1,10 +1,10 @@
 <script lang="ts">
     import { invalidateAll } from '$app/navigation';
     import { onMount } from 'svelte';
-    import VideoPlayer from './VideoPlayer.svelte';
-    import Playlist from './Playlist.svelte';
-    import Toolbar from './Toolbar.svelte';
-    import VideoDetails from './VideoDetails.svelte';
+    import VideoPlayer from '../components/VideoPlayer.svelte';
+    import Playlist from '../components/Playlist.svelte';
+    import Toolbar from '../components/Toolbar.svelte';
+    import VideoDetails from '../components/VideoDetails.svelte';
     import type { PageData } from './$types';
     export let data : PageData;
     let number = 0;
@@ -14,37 +14,27 @@
         invalidateAll();
         number = 0;
     }
-    $: current = data.playlist[number];
+    $: current = data.playlist[number] || undefined;
     $: videoSrc = `http://127.0.0.1:8000/video/${current.uuid}`;
-
-    // todo dynamic height for video player ?
+    $: formattedName = current?.path.split('/')[current?.path.split('/').length-1]
 </script>
 
-<section class="layout">
-    <div class="video-section">
-        <VideoPlayer src={videoSrc}
-                     currentVideo={current}
-                     endVideoCallback={plus}
-                     nextVideoCallback={plus}
-                     previousVideoCallback={minus}
-                     errorVideoCallback={plus}
-        />
-        <Toolbar fetchPlaylist={fetchPlaylist}/>
+<Toolbar fetchPlaylist={fetchPlaylist}/>
+<div class="container flex gap-1 mt-2">
+    <div class="w-3/4">
+        <VideoPlayer
+            src={videoSrc}
+            currentVideo={current}
+            endVideoCallback={plus}
+            nextVideoCallback={plus}
+            previousVideoCallback={minus}
+            errorVideoCallback={plus} />
+        <VideoDetails title={formattedName} videoData={current}/>
     </div>
-    <div>
+    <div class="w-1/4">
         <Playlist
             collection={data.playlist}
             currentVideo={current}
             clickOnVideoCallback={(i) => number = i}/>
-        <VideoDetails videoData={current}/>
     </div>
-</section>
-
-<style>
-.layout {
-    display: flex;
-    height: 98vh;
-    overflow-y: hidden;
-    box-sizing: border-box;
-}
-</style>
+</div>

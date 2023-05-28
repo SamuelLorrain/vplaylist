@@ -15,8 +15,7 @@ class DatabaseService:
         db_connection = sqlite3.connect(self.db_file)
         for path in self.db_paths:
             db_connection.execute(
-                "INSERT OR IGNORE INTO data_rootpath(path) VALUES (?)",
-                (str(path),)
+                "INSERT OR IGNORE INTO data_rootpath(path) VALUES (?)", (str(path),)
             )
         db_connection.commit()
         db_connection.close()

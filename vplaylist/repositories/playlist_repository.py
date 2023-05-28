@@ -46,7 +46,8 @@ class PlaylistRepository:
         )
 
         # TODO review usage
-        query.change_limit_clause(search.limit + search.shift)
+        query.change_limit_clause(search.limit)
+        query.change_offset_clause(search.shift)
 
         if search.sorting != Sorting.ON_RAM_RANDOMIZE:
             query.change_order_clause(get_query_for_sorting(search.sorting))
