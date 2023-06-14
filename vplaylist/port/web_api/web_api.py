@@ -27,7 +27,7 @@ from vplaylist.port.web_api.responses.video_stream_response import VideoStreamRe
 
 app = FastAPI()
 
-origins = ["http://localhost:5173"]
+origins = ["http://localhost:5173", "http://localhost:3000"]
 
 app.add_middleware(
     CORSMiddleware,

@@ -40,28 +40,16 @@
     }
 </script>
 
-<div class="w-screen p-2 bg-gray-500">
+<div>
     <button on:click={fetchPlaylist}>Another playlist</button>
-    <label>
-        <input class="checkbox" type="checkbox" bind:checked={best} on:change={handleChange}>
-        Best
-    </label>
-    <label>
-        <input class="checkbox" type="checkbox" bind:checked={last} on:change={handleChange}>
-        Last
-    </label>
-    <label>
-        <input class="checkbox" type="checkbox" bind:checked={noWebm} on:change={handleChange}>
-        No Webm
-    </label>
-    <label>
-        Quality
-        <select class="select" bind:value={quality} on:change={handleChange}>
-            <option value="all">All</option>
-            <option value="hd">HD</option>
-            <option value="sd">SD</option>
-        </select>
-    </label>
+    <input class="checkbox" type="checkbox" bind:checked={best} on:change={handleChange}>
+    <input class="checkbox" type="checkbox" bind:checked={last} on:change={handleChange}>
+    <input class="checkbox" type="checkbox" bind:checked={noWebm} on:change={handleChange}>
+    <select class="select" bind:value={quality} on:change={handleChange}>
+        <option value="all">All</option>
+        <option value="hd">HD</option>
+        <option value="sd">SD</option>
+    </select>
     <input type="text" bind:value={search}>
     <button on:click={handleChange}>Search</button>
     <button on:click={reset}>Reset</button>

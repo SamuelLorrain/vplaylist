@@ -20,21 +20,21 @@
 </script>
 
 <Toolbar fetchPlaylist={fetchPlaylist}/>
-<div class="container flex gap-1 mt-2">
-    <div class="w-3/4">
-        <VideoPlayer
-            src={videoSrc}
-            currentVideo={current}
-            endVideoCallback={plus}
-            nextVideoCallback={plus}
-            previousVideoCallback={minus}
-            errorVideoCallback={plus} />
-        <VideoDetails title={formattedName} videoData={current}/>
-    </div>
-    <div class="w-1/4">
-        <Playlist
-            collection={data.playlist}
-            currentVideo={current}
-            clickOnVideoCallback={(i) => number = i}/>
-    </div>
-</div>
+<!-- <div class="container flex gap-1 mt-2"> -->
+<!--     <div class="w-3/4"> -->
+<!--         <VideoPlayer -->
+<!--             src={videoSrc} -->
+<!--             currentVideo={current} -->
+<!--             endVideoCallback={plus} -->
+<!--             nextVideoCallback={plus} -->
+<!--             previousVideoCallback={minus} -->
+<!--             errorVideoCallback={plus} /> -->
+<!--         <VideoDetails title={formattedName} videoData={current}/> -->
+<!--     </div> -->
+<!--     <div class="w-1/4"> -->
+<!--         <Playlist -->
+<!--             collection={data.playlist} -->
+<!--             currentVideo={current} -->
+<!--             clickOnVideoCallback={(i) => number = i}/> -->
+<!--     </div> -->
+<!-- </div> -->
