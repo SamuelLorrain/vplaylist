@@ -25,8 +25,6 @@ class VideoPathFromFileSystem:
     timestamp: float
 
 
-
-
 class VideoRepository:
     def __init__(self) -> None:
         self.config_registry = ConfigRegistry()
@@ -221,6 +219,7 @@ class VideoRepository:
                     "data_video.name",
                     "data_type.name",
                     "data_type.note",
+                    "data_video.path",
                 ]
             )
         )
@@ -246,6 +245,7 @@ class VideoRepository:
             width=video_detail_except_tags[6],
             note=video_detail_except_tags[7],
             name=video_detail_except_tags[8],
+            path=video_detail_except_tags[9],
         )
         return video_details
 

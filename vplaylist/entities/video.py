@@ -36,3 +36,4 @@ class VideoDetails(BaseModel):
     height: Optional[int]
     width: Optional[int]
     note: Optional[int]
+    path: Optional[str]
