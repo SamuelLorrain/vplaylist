@@ -1,27 +1,27 @@
-import { PlaylistContext } from '@/contexts/PlaylistContext';
 import { fetcher } from '@/lib/fetchers';
-import { useContext } from 'react';
+import { searchOptions } from '@/contexts/recoilState';
+import { useRecoilState } from 'recoil';
 
 import useSWR from 'swr';
 
 export function useGetNewPlaylistUrl() {
-    const { fetchingOptions, search } = useContext(PlaylistContext);
+  const [fetchContext, _] = useRecoilState(searchOptions);
 
     let fetchUrl : URL = new URL('http://127.0.0.1:8000/playlist/create')
-    if (fetchingOptions.best) {
+    if (fetchContext.fetchingOptions.best) {
         fetchUrl.searchParams.set('search_type', 'best');
     }
-    if (fetchingOptions.last) {
+    if (fetchContext.fetchingOptions.last) {
         fetchUrl.searchParams.set('sorting', 'last_by_id');
     }
-    if (search) {
+    if (fetchContext.search.length > 0) {
         fetchUrl.searchParams.set('search_type', 'basic');
-        fetchUrl.searchParams.set('search_term', search);
+        fetchUrl.searchParams.set('search_term', fetchContext.search);
     }
-    if (fetchingOptions.noWebm) {
+    if (fetchContext.fetchingOptions.noWebm) {
         fetchUrl.searchParams.set('webm', 'no_webm');
     }
-    fetchUrl.searchParams.set('quality', fetchingOptions.quality);
+    fetchUrl.searchParams.set('quality', fetchContext.fetchingOptions.quality);
     return fetchUrl;
 };
 

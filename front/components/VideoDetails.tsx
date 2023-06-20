@@ -7,10 +7,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import { useRecoilState } from 'recoil';
+import { currentPlaylistElement } from '@/contexts/recoilState';
 
-const VideoDetails: React.FC<{uuid: string|null}> = ({uuid}: {uuid:string|null}) => {
+const VideoDetails: React.FC = () => {
+    const [currentPlaylistElementState] = useRecoilState(currentPlaylistElement);
     const [open, setOpen] = useState(false);
-    const { data, error } = useVideoDetails(uuid);
+    const { data, error } = useVideoDetails(currentPlaylistElementState.uuid);
 
     if (error) {
         return "error";
@@ -44,7 +47,6 @@ const VideoDetails: React.FC<{uuid: string|null}> = ({uuid}: {uuid:string|null})
         );
     }
     return "loading..."
-
 }
 
 export default VideoDetails;

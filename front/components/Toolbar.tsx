@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -13,14 +13,32 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useSWRConfig } from 'swr';
-import { PlaylistContext } from '@/contexts/PlaylistContext';
 import { useGetNewPlaylistUrl } from '@/hooks/videoDetails';
+import { searchOptions } from '@/contexts/recoilState';
+import { useRecoilState } from 'recoil';
 
 export default function Home() {
   const fetchUrl = useGetNewPlaylistUrl();
-  const { fetchingOptions, setFetchingOptions, setSearch } = useContext(PlaylistContext);
   const { mutate } = useSWRConfig();
   const [searchValue, setSearchValue] = useState('');
+  const [noWebmValue, setNoWebmValue] = useState(false);
+  const [qualityValue, setQualityValue] = useState('all');
+  const [lastValue, setLastValue] = useState(false);
+  const [bestValue, setBestValue] = useState(false);
+  const [_, setFetchContext] = useRecoilState(searchOptions);
+
+  // trigger re-fetch
+  function updateContext() {
+    setFetchContext({
+        fetchingOptions: {
+            noWebm: noWebmValue,
+            quality: qualityValue,
+            last: lastValue,
+            best: bestValue,
+        },
+        search: searchValue
+    });
+  }
 
   return (
     <div className="flex py-5 px-10 justify-center items-center border-b-2 sticky top-0 mb-5 bg-white z-50">
@@ -29,7 +47,7 @@ export default function Home() {
                 Another playlist
             </Button>
             <Input type="text" placeholder="search" value={searchValue} onChange={(e) => setSearchValue(e.target.value)}/>
-            <Button onClick={_ => setSearch(searchValue)}>Search</Button>
+            <Button onClick={_ => updateContext()}>Search</Button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button className="whitespace-nowrap">Search options</Button>
@@ -38,8 +56,8 @@ export default function Home() {
                     <DropdownMenuLabel>
                         Quality
                     </DropdownMenuLabel>
-                    <DropdownMenuRadioGroup value={fetchingOptions.quality}
-                                            onValueChange={e => setFetchingOptions({quality: e, noWebm: fetchingOptions.noWebm, last: fetchingOptions.last, best:fetchingOptions.best})}>
+                    <DropdownMenuRadioGroup value={qualityValue}
+                                            onValueChange={(e) => setQualityValue(e)}>
                         <DropdownMenuRadioItem value="all">
                             All
                         </DropdownMenuRadioItem>
@@ -53,21 +71,19 @@ export default function Home() {
                     <DropdownMenuLabel>
                         Format
                     </DropdownMenuLabel>
-                    <DropdownMenuCheckboxItem checked={fetchingOptions.noWebm}
-                                              onCheckedChange={e => setFetchingOptions({noWebm: e, quality: fetchingOptions.quality, last: fetchingOptions.last, best: fetchingOptions.best})}>
+                    <DropdownMenuCheckboxItem checked={noWebmValue}
+                                              onCheckedChange={e => setNoWebmValue(e)}>
                         No Webm
                     </DropdownMenuCheckboxItem>
                     <DropdownMenuLabel>
                         Preferences
                     </DropdownMenuLabel>
-                    <DropdownMenuCheckboxItem checked={fetchingOptions.last}
-                                              onCheckedChange={e => setFetchingOptions({quality: fetchingOptions.quality, noWebm: fetchingOptions.noWebm, last: e, best: fetchingOptions.best})}>
+                    <DropdownMenuCheckboxItem checked={lastValue}
+                                              onCheckedChange={e => setLastValue(e)}>
                         Last
                     </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem checked={fetchingOptions.best}
-                                            onCheckedChange={e => setFetchingOptions(
-                                                {quality: fetchingOptions.quality, noWebm: fetchingOptions.noWebm, last: fetchingOptions.last, best: e}
-                                                )}>
+                    <DropdownMenuCheckboxItem checked={bestValue}
+                                              onCheckedChange={e => setBestValue(e)}>
                         Best
                     </DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
