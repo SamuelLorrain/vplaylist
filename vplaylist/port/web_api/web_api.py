@@ -77,14 +77,11 @@ async def get_video_details(uuid: UUID) -> VideoDetailsResponse:
 
 class VideoDetailsParams(BaseModel):
     name: Optional[str]
-    date_down: Optional[date]
 
 
 @app.put("/video/{uuid}/details")
 async def patch_video_details(
         uuid: UUID,
         video_details_params: VideoDetailsParams) -> Response:
-    print(uuid)
-    print(video_details_params)
-    modify_video_details(uuid)
+    modify_video_details(uuid, video_details_params.name)
     return Response("", status_code=201)

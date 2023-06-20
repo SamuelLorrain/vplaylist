@@ -308,3 +308,15 @@ class VideoRepository:
         db_connection.commit()
         db_connection.close()
         return True
+
+    def modify_video(self, video: Video) -> bool:
+        db_connection = sqlite3.connect(str(self.db_file))
+        db_connection.execute(
+            """
+            UPDATE data_video
+            SET name = ?
+            WHERE uuid = ?
+            """, (video.name, video.uuid))
+        db_connection.commit()
+        db_connection.close()
+        return True

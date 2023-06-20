@@ -1,5 +1,8 @@
+from vplaylist.repositories.video_repository import VideoRepository
 
-from uuid import UUID
 
-def modify_video_details(uuid):
-    pass
+def modify_video_details(uuid, name):
+    video_repository = VideoRepository()
+    video = video_repository.fetch_video(uuid)
+    video.name = name
+    video_repository.modify_video(video)

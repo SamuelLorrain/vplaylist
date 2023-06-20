@@ -46,7 +46,11 @@ export function useNewPlaylist() {
 export function useVideoDetails(uuid: string|null) {
     const { data, error }= useSWR(
         () => (uuid != null) ? `http://localhost:8000/video/${uuid}/details` : null,
-        fetcher
+        fetcher,
+        {
+            revalidateOnFocus: false,
+            revalidateOnReconnect: false,
+        }
     );
     return {
         data,
