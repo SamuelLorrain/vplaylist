@@ -309,14 +309,24 @@ class VideoRepository:
         db_connection.close()
         return True
 
-    def modify_video(self, video: Video) -> bool:
+    def modify_video(self, uuid: UUID, details: VideoDetails) -> bool:
         db_connection = sqlite3.connect(str(self.db_file))
+        query_params = []
+        sql_set_string = ""
+        if details.name is not None:
+            query_params.append(details.name)
+            sql_set_string = sql_set_string + "\nSET name = ?"
+        if details.note is not None:
+            query_params.append(details.note)
+            sql_set_string = sql_set_string + "\nSET note = ?"
+        if details.date_down is not None:
+            query_params.append(details.date_down)
+            sql_set_string = sql_set_string + "\nSET date_down = ?"
+        query_params.append(str(uuid))
         db_connection.execute(
-            """
-            UPDATE data_video
-            SET name = ?
-            WHERE uuid = ?
-            """, (video.name, video.uuid))
+                f"UPDATE data_video\n{sql_set_string}\nWHERE uuid = ?",
+                query_params
+            )
         db_connection.commit()
         db_connection.close()
         return True

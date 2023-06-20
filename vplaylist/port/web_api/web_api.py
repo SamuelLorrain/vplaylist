@@ -1,6 +1,5 @@
 from typing import Optional
 from uuid import UUID
-from datetime import date
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -77,11 +76,13 @@ async def get_video_details(uuid: UUID) -> VideoDetailsResponse:
 
 class VideoDetailsParams(BaseModel):
     name: Optional[str]
+    note: Optional[int]
+    date_down: Optional[str]
 
 
 @app.put("/video/{uuid}/details")
 async def patch_video_details(
         uuid: UUID,
         video_details_params: VideoDetailsParams) -> Response:
-    modify_video_details(uuid, video_details_params.name)
+    modify_video_details(uuid, video_details_params)
     return Response("", status_code=201)

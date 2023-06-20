@@ -1,4 +1,3 @@
-import { useState, useEffect, useCallback } from 'react';
 import { useVideoDetails } from '@/hooks/videoDetails';
 import React from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -8,74 +7,41 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { useRecoilState } from 'recoil';
-import { currentPlaylistElement } from '@/contexts/recoilState';
-import debounce from 'lodash/debounce';
+import { currentPlaylistElement, openVideoDetails } from '@/contexts/recoilState';
+import UpdateInput from './UpdateInput';
 
 const VideoDetails: React.FC = () => {
     const [currentPlaylistElementState] = useRecoilState(currentPlaylistElement);
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = useRecoilState(openVideoDetails);
     const { data, error } = useVideoDetails(currentPlaylistElementState.uuid);
-    const [displayedName, setDisplayedName] = useState<string|undefined>(data?.name);
-    const [isPending, setIsPending] = useState(false);
-
-    useEffect(() => {
-        if (data?.name) {
-            setDisplayedName(data?.name);
-        }
-    }, [JSON.stringify(data)]);
-
-    function updateDisplayName(oldValue: string|undefined, newValue: string) {
-        fetch(`http://localhost:8000/video/${currentPlaylistElementState.uuid}/details`, {
-            method: "PUT",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: newValue
-            })
-        })
-        .then(response => {
-            if(response.status >= 400) {
-                throw Error();
-            }
-        })
-        .catch(() => {
-            setDisplayedName(oldValue);
-        })
-        .finally(() => {
-            setIsPending(false);
-        });
-    }
-
-    const debounceUpdate = useCallback(debounce(updateDisplayName, 1500), [currentPlaylistElementState.uuid]);
 
     if (error) {
         return "error";
     }
     if (data) {
         return (
-        <Collapsible>
+        <Collapsible open={open}>
           <CollapsibleContent asChild>
             <div className="border-x p-2">
-                <ul>
-                    <li>{data.uuid}</li>
-                    <li>name : <input type="text"
-                        value={displayedName}
-                        onChange={(e) => {
-                            setDisplayedName(e.target.value);
-                            setIsPending(true);
-                            debounceUpdate(displayedName, e.target.value);
-                        }}
-                    />
-                        {isPending ? 'is pending': ''}
-                        </li>
-                    <li>{JSON.stringify(data.participants)}</li>
-                    <li>{data.film}</li>
-                    <li>{data.studio}</li>
-                    <li>{JSON.stringify(data.tags)}</li>
-                    <li>{data.date_down}</li>
-                    <li>{data.note}</li>
-                </ul>
+              <ul>
+                <li>name : <UpdateInput type="text" value={data ? data.name : ''} uuid={currentPlaylistElementState.uuid} updatedValue="name"/></li>
+                <li>participants: {JSON.stringify(data.participants)}</li>
+                <li>film : {data.film}</li>
+                <li>studio : {data.studio}</li>
+                <li>tags: {JSON.stringify(data.tags)}</li>
+                <li>
+                    date_down :
+                    <UpdateInput type="date"
+                                 value={data ? data.date_down : new Date()}
+                                 uuid={currentPlaylistElementState.uuid}
+                                 updatedValue="date_down"
+                                 formatter={(x) => {
+                                    const d = new Date(x);
+                                    return `${d.getDay()}-${d.getMonth()}-${d.getFullYear()}`
+                                 }}/>
+                </li>
+                <li>note : <UpdateInput type="number" value={data ? data.note: ''} uuid={currentPlaylistElementState.uuid} updatedValue="note"/></li>
+              </ul>
             </div>
           </CollapsibleContent>
           <CollapsibleTrigger asChild>
@@ -86,8 +52,7 @@ const VideoDetails: React.FC = () => {
                   }
               </div>
           </CollapsibleTrigger>
-        </Collapsible>
-        );
+        </Collapsible>);
     }
     return "loading..."
 }

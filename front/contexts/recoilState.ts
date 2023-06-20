@@ -25,3 +25,8 @@ export const searchOptions = atom({
         search: '',
     }
 });
+
+export const openVideoDetails = atom({
+    key: 'openVideoDetails',
+    default: false,
+})
