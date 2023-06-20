@@ -44,7 +44,6 @@ export function useNewPlaylist() {
 
 
 export function useVideoDetails(uuid: string|null) {
-    console.log("uuid, ", uuid);
     const { data, error }= useSWR(
         () => (uuid != null) ? `http://localhost:8000/video/${uuid}/details` : null,
         fetcher

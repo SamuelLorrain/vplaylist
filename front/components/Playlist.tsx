@@ -17,7 +17,7 @@ export default function Playlist() {
     if (error) return "error";
     if (data) {
         return (
-            <div className="playlist border-t border-x rounded-md overflow-scroll">
+            <div className="playlist border-t border-x rounded-md overflow-y-scroll overflow-x-hidden">
             {
                 data.playlist.map((point: {uuid: string, path: string}) =>
                 <div key={point.uuid}>
