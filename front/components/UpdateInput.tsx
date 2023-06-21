@@ -47,7 +47,7 @@ const UpdateInput = ({value, uuid, type, updatedValue, formatter}: UpdateInputTy
         <span>
             <input
                 type={type}
-                value={displayedValue}
+                value={displayedValue ?? ''}
                 onChange={(e) => {
                   setDisplayedValue(e.target.value);
                   setIsPending(true);

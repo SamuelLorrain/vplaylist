@@ -9,7 +9,7 @@ export const currentPlaylistElement = atom({
     key: 'currentPlaylistElement',
     default: {
         idx: -1,
-        uuid: ''
+        uuid: '',
     }
 })
 

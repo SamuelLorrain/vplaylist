@@ -45,7 +45,7 @@ const VideoDetails: React.FC = () => {
             </div>
           </CollapsibleContent>
           <CollapsibleTrigger asChild>
-              <div className="p-2 border rounded-b-md flex justify-between" onClick={() => setOpen(open => !open)}>
+              <div className="p-2 border rounded-b-md flex justify-between cursor-pointer" onClick={() => setOpen(open => !open)}>
                   <h2>{data.path ?? data.name ?? data.uuid}</h2>
                   {
                       open  ? <ChevronUp/> : <ChevronDown/>
