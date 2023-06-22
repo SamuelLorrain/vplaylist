@@ -12,6 +12,7 @@ mpv = "^1.0.3"
 uvicorn = "^0.22.0"
 fastapi = {extras = ["all"], version = "^0.95.1"}
 pydantic = "^1.10.7"
+yoyo-migrations = "^8.2.0"
 
 
 [tool.poetry.group.dev.dependencies]

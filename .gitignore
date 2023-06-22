@@ -4,7 +4,6 @@ scripts/
 *.gcs
 *.db
 *.sqlite3
-*.sql
 *.pyc
 __pycache__/*
 config.toml
