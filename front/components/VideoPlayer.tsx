@@ -12,7 +12,6 @@ const VideoPlayer: React.FC = () => {
 
     useEffect(() => {
         return () => {
-            analytics.debug();
             analytics.send()
         }
     }, [currentPlaylistElementState.uuid]);
@@ -24,7 +23,7 @@ const VideoPlayer: React.FC = () => {
             width="1000px"
             src={src}
             onEnded={(e) => {
-              analytics.setTotalDuration(e.target.currentTime);
+              analytics.updateAnalysis({type: "ended", value: -1})
               const idx = currentPlaylistElementState.idx + 1;
               if (idx >= playlist.length) {
                   return;
@@ -34,11 +33,9 @@ const VideoPlayer: React.FC = () => {
                 idx: idx
               });
             }}
-            onDurationChange={(e) => analytics.setTotalDuration(e.target.duration)}
-            onTimeUpdate={(e) => analytics.updateAnalysis({type:"timeupdate", currentTime: e.target.currentTime})}
-            onSeeked={(e) => analytics.updateAnalysis({type: "seek", currentTime: e.target.currentTime})}
-            onPause={(e) => analytics.updateAnalysis({type: "pause", currentTime: e.target.currentTime})}
-            onPlay={(e) => analytics.updateAnalysis({type: "play", currentTime: e.target.currentTime})}
+            onSeeked={(e) => analytics.updateAnalysis({type: "seek", value: e.target.currentTime})}
+            onPause={(e) => analytics.updateAnalysis({type: "pause", value: e.target.currentTime})}
+            onPlay={(e) => analytics.updateAnalysis({type: "play", value: e.target.currentTime})}
             autoPlay
             controls>
           </video>

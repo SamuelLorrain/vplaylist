@@ -1,9 +1,11 @@
 from typing import Optional
 from uuid import UUID
+from datetime import datetime
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from vplaylist.actions.create_analytics import create_analytics
 
 from vplaylist.actions.create_playlist import create_playlist
 from vplaylist.actions.fetch_video import fetch_video
@@ -16,6 +18,10 @@ from vplaylist.entities.search_video import (
     SearchVideo,
     Sorting,
     Webm,
+)
+from vplaylist.entities.analytics import (
+    Analytics,
+    AnalyticEvent
 )
 from vplaylist.port.web_api.responses.create_playlist_response import (
     CreatePlaylistResponse,
@@ -85,4 +91,42 @@ async def patch_video_details(
         uuid: UUID,
         video_details_params: VideoDetailsParams) -> Response:
     modify_video_details(uuid, video_details_params)
+    return Response("", status_code=201)
+
+
+class VideoAnalyticsEventParams(BaseModel):
+    event_type: str
+    value: float
+    timestamp: int
+
+
+class VideoAnalyticsParams(BaseModel):
+    timestamp: int
+    events: list[VideoAnalyticsEventParams]
+
+
+@app.post("/video/{uuid}/analytics")
+async def upload_video_analytics(
+        uuid: UUID,
+        video_analytics_params: VideoAnalyticsParams
+) -> Response:
+    events = [
+        AnalyticEvent(
+            event_type=event.event_type,
+            value=event.value,
+            event_datetime=datetime.fromtimestamp(
+                event.timestamp
+            )
+        )
+        for event
+        in video_analytics_params.events
+    ]
+    analytics = Analytics(
+        video_uuid=uuid,
+        date_analytics=datetime.fromtimestamp(
+            video_analytics_params.timestamp
+        ),
+        events=events
+    )
+    create_analytics(analytics)
     return Response("", status_code=201)

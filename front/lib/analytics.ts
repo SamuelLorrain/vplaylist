@@ -1,35 +1,30 @@
 
 export type AnalyticEvent = {
     type: "play"|"pause"|"seek"|"timeupdate"|"ended";
-    currentTime: number,
+    value: number,
+    timestamp: number
 };
 
 export class Analytics {
     uuid: string;
-    totalDuration: number
     events: AnalyticEvent[]
 
     constructor(uuid: string) {
       this.uuid = uuid;
-      this.totalDuration = -1;
       this.events = [];
     }
 
-    setTotalDuration(totalDuration: number) {
-      this.totalDuration = totalDuration;
-    }
-
-    updateAnalysis({type, currentTime} : AnalyticEvent) {
+    updateAnalysis({type, value} : {type: "play"|"pause"|"seek"|"timeupdate"|"ended", value: number}) {
       this.events.push({
           type,
-          currentTime
+          value,
+          timestamp: Math.floor(Date.now()/1000)
       })
     }
 
     debug() {
       console.log({
           uuid : this.uuid,
-          totalDuration : this.totalDuration,
           events : this.events
       })
     }
@@ -38,6 +33,27 @@ export class Analytics {
       if (this.events.length <= 5) {
           return;
       }
+      this.updateAnalysis({type: "ended", value: -1})
+      fetch(`http://localhost:8000/video/${this.uuid}/analytics`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            timestamp: Math.floor(Date.now()/1000),
+            events: this.events.map((i) => {
+                return {
+                    event_type: i.type,
+                    value: i.value,
+                    timestamp: i.timestamp
+                }
+            })
+        })
+      })
+      .then(res => {
+          if (res.status >= 400) {
+              throw Error("Analytics failed");
+          }
+      })
     }
 }
-

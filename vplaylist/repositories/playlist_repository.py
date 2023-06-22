@@ -24,6 +24,7 @@ class PlaylistRepository:
     def __init__(self) -> None:
         self.config_registry = ConfigRegistry()
         self.best = self.config_registry.best
+        self.db_file = self.config_registry.db_file
 
     def create_playlist(self, search: SearchVideo) -> Playlist:
         query = self._convert_search_to_query(search)
@@ -81,7 +82,7 @@ class PlaylistRepository:
     def _execute_query(
         self, query: QueryConstructor, search: SearchVideo
     ) -> list[list[Any]]:
-        self.conn = sqlite3.connect("db.sqlite3")
+        self.conn = sqlite3.connect(self.db_file)
         self.conn.create_function("REGEXP", 2, basic_regexp)
         params = query.get_params()
         if params:
