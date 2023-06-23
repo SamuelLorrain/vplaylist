@@ -43,8 +43,6 @@ export default function Home() {
 
   return (
     <div className="flex py-5 px-10 justify-center items-center border-b-2 sticky top-0 mb-5 bg-white z-50">
-        <div className="grow">
-        </div>
         <div className="flex gap-3">
             <Button variant="secondary"
                     className="whitespace-nowrap"

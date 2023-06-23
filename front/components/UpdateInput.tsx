@@ -15,7 +15,7 @@ const UpdateInput = ({value, uuid, type, updatedValue, formatter}: UpdateInputTy
 
     function updateDisplayName(oldValue: string|undefined, newValue: string) {
         const formatted = formatter ? formatter(newValue) : newValue;
-        fetch(`http://localhost:8000/video/${uuid}/details`, {
+        fetch(`${process.env.NEXT_PUBLIC_BACK_HOST}/video/${uuid}/details`, {
             method: "PUT",
             headers: {
                 'Content-Type': 'application/json'

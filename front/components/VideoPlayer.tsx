@@ -76,9 +76,11 @@ const VideoPlayer: React.FC = () => {
 
     useEffect(() => {
         return () => {
-            analytics.send()
+            if(!autoDiscoveryModeState){
+                analytics.send()
+            }
         }
-    }, [currentPlaylistElementState.uuid]);
+    }, [currentPlaylistElementState.uuid, autoDiscoveryModeState]);
 
     return (
       <div>

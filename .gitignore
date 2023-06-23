@@ -7,5 +7,3 @@ scripts/
 *.pyc
 __pycache__/*
 config.toml
-.env
-.env.*

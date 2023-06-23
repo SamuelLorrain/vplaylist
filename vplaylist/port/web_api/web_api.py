@@ -29,10 +29,13 @@ from vplaylist.port.web_api.responses.create_playlist_response import (
 )
 from vplaylist.port.web_api.responses.video_details_response import VideoDetailsResponse
 from vplaylist.port.web_api.responses.video_stream_response import VideoStreamResponse
+from dotenv import dotenv_values
 
 app = FastAPI()
 
-origins = ["http://localhost:5173", "http://localhost:3000"]
+dotenv_config = dotenv_values('.env')
+
+origins = [dotenv_config['FRONT_HOST']]
 
 app.add_middleware(
     CORSMiddleware,

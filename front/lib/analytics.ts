@@ -34,7 +34,7 @@ export class Analytics {
           return;
       }
       this.updateAnalysis({type: "ended", value: -1})
-      fetch(`http://localhost:8000/video/${this.uuid}/analytics`, {
+      fetch(`${process.env.NEXT_PUBLIC_BACK_HOST}/video/${this.uuid}/analytics`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
