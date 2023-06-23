@@ -14,8 +14,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useSWRConfig } from 'swr';
 import { useGetNewPlaylistUrl } from '@/hooks/videoDetails';
-import { searchOptions } from '@/contexts/recoilState';
-import { useRecoilState } from 'recoil';
+import { searchOptions, globalKeydownEventIsCancelled } from '@/contexts/recoilState';
+import { useSetRecoilState } from 'recoil';
 
 export default function Home() {
   const fetchUrl = useGetNewPlaylistUrl();
@@ -25,7 +25,8 @@ export default function Home() {
   const [qualityValue, setQualityValue] = useState('all');
   const [lastValue, setLastValue] = useState(false);
   const [bestValue, setBestValue] = useState(false);
-  const [_, setFetchContext] = useRecoilState(searchOptions);
+  const setFetchContext = useSetRecoilState(searchOptions);
+  const setGlobalKeydownEventIsCancelledState = useSetRecoilState(globalKeydownEventIsCancelled);
 
   // trigger re-fetch
   function updateContext() {
@@ -43,10 +44,23 @@ export default function Home() {
   return (
     <div className="flex py-5 px-10 justify-center items-center border-b-2 sticky top-0 mb-5 bg-white z-50">
         <div className="flex gap-2">
-            <Button variant="secondary" className="whitespace-nowrap" onClick={() => mutate(fetchUrl.toString())}>
+            <Button variant="secondary"
+                    className="whitespace-nowrap"
+                    onClick={() => mutate(fetchUrl.toString())}
+            >
                 Another playlist
             </Button>
-            <Input type="text" placeholder="search" value={searchValue} onChange={(e) => setSearchValue(e.target.value)}/>
+            <Input type="text"
+                   placeholder="search"
+                   value={searchValue}
+                   onChange={(e) => setSearchValue(e.target.value)}
+                   onFocus={() => {
+                    setGlobalKeydownEventIsCancelledState(true);
+                   }}
+                   onBlur={() => {
+                        setGlobalKeydownEventIsCancelledState(false)
+                   }}
+            />
             <Button onClick={_ => updateContext()}>Search</Button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>

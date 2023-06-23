@@ -30,3 +30,8 @@ export const openVideoDetails = atom({
     key: 'openVideoDetails',
     default: false,
 })
+
+export const globalKeydownEventIsCancelled = atom({
+    key: 'globalKeydownEventIsCancelled',
+    default: false,
+})
