@@ -35,3 +35,8 @@ export const globalKeydownEventIsCancelled = atom({
     key: 'globalKeydownEventIsCancelled',
     default: false,
 })
+
+export const autodiscoveryMode = atom({
+    key: 'autodiscoveryMode',
+    default: false
+})

@@ -6,11 +6,14 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useRecoilState } from 'recoil';
-import { currentPlaylistElement, openVideoDetails } from '@/contexts/recoilState';
+import { currentPlaylistElement, openVideoDetails, autodiscoveryMode } from '@/contexts/recoilState';
 import UpdateInput from './UpdateInput';
 
 const VideoDetails: React.FC = () => {
+    const [autoDiscoveryModeState, setAutoDiscoveryModeState] = useRecoilState(autodiscoveryMode);
     const [currentPlaylistElementState] = useRecoilState(currentPlaylistElement);
     const [open, setOpen] = useRecoilState(openVideoDetails);
     const { data, error } = useVideoDetails(currentPlaylistElementState.uuid);
@@ -42,6 +45,15 @@ const VideoDetails: React.FC = () => {
                 </li>
                 <li>note : <UpdateInput type="number" value={data ? data.note: ''} uuid={currentPlaylistElementState.uuid} updatedValue="note"/></li>
               </ul>
+              <div className="grow flex justify-end items-center gap-2">
+                <Label htmlFor="auto-discovery-id">Auto discovery</Label>
+                <Switch id="auto-discovery-id"
+                        checked={autoDiscoveryModeState}
+                        onCheckedChange={() =>
+                            setAutoDiscoveryModeState((check: boolean) => !check)
+                        }
+                />
+              </div>
             </div>
           </CollapsibleContent>
           <CollapsibleTrigger asChild>

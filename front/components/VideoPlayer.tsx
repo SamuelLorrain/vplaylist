@@ -1,19 +1,46 @@
 import React, { useEffect, useRef } from 'react';
-import { useRecoilState } from 'recoil';
-import { currentPlaylistElement, playlist, globalKeydownEventIsCancelled } from '@/contexts/recoilState';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import {
+   currentPlaylistElement,
+   playlist,
+   globalKeydownEventIsCancelled,
+   autodiscoveryMode
+} from '@/contexts/recoilState';
 import { Analytics } from '@/lib/analytics';
+import { cancelAutoDiscover, autoDiscover } from '@/lib/autodiscover';
 
 const VideoPlayer: React.FC = () => {
     const [currentPlaylistElementState, setCurrentPlaylistElementState] = useRecoilState(currentPlaylistElement);
     const [globalKeydownEventIsCancelledState] = useRecoilState(globalKeydownEventIsCancelled);
+    const autoDiscoveryModeState = useRecoilValue(autodiscoveryMode);
     const [playlistState] = useRecoilState(playlist);
     const src = `http://127.0.0.1:8000/video/${currentPlaylistElementState.uuid}`;
     const analytics = new Analytics(currentPlaylistElementState.uuid);
-    const videoRef = useRef(null);
+    const videoRef = useRef<HTMLMediaElement>(null);
+
+    useEffect(() => {
+        if (videoRef.current == null) {
+            return;
+        }
+        if(!autoDiscoveryModeState){
+            cancelAutoDiscover(videoRef.current);
+            return;
+        }
+        autoDiscover(videoRef.current);
+        return () => {
+            if (videoRef.current == null) {
+                return;
+            }
+            cancelAutoDiscover(videoRef.current);
+        }
+    }, [autoDiscoveryModeState, videoRef.current]);
 
     useEffect(() => {
         let clickEvent = (e: KeyboardEvent) => {
-            if(globalKeydownEventIsCancelledState) {
+            if (autoDiscoveryModeState) {
+                return;
+            }
+            if (globalKeydownEventIsCancelledState) {
                 return;
             }
             if (videoRef.current == null) {
@@ -59,11 +86,12 @@ const VideoPlayer: React.FC = () => {
           <video height="600px"
             width="1000px"
             ref={videoRef}
+            id="video-player"
             src={src}
-            onEnded={(e) => {
+            onEnded={(_) => {
               analytics.updateAnalysis({type: "ended", value: -1})
               const idx = currentPlaylistElementState.idx + 1;
-              if (idx >= playlist.length) {
+              if (idx >= playlistState.length) {
                   return;
               }
               setCurrentPlaylistElementState({
@@ -71,9 +99,9 @@ const VideoPlayer: React.FC = () => {
                 idx: idx
               });
             }}
-            onSeeked={(e) => analytics.updateAnalysis({type: "seek", value: e.target.currentTime})}
-            onPause={(e) => analytics.updateAnalysis({type: "pause", value: e.target.currentTime})}
-            onPlay={(e) => analytics.updateAnalysis({type: "play", value: e.target.currentTime})}
+            onSeeked={(e) => analytics.updateAnalysis({type: "seek", value: (e.target as HTMLMediaElement).currentTime})}
+            onPause={(e) => analytics.updateAnalysis({type: "pause", value: (e.target as HTMLMediaElement).currentTime})}
+            onPlay={(e) => analytics.updateAnalysis({type: "play", value: (e.target as HTMLMediaElement).currentTime})}
             autoPlay
             controls>
           </video>
