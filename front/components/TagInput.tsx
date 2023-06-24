@@ -80,7 +80,7 @@ const removeParticipantRelation = async (video_uuid: string, resource_uuid: stri
     return response;
 };
 
-export const ParticipantInput = ({uuid, resource, initialValues}: TagInputType) => {
+export const TagInput = ({uuid, resource, initialValues}: TagInputType) => {
     const [newValue, setNewValue] = useState<string>('');
     const [values, setValues] = useState<MediaDetailElementType[]>([]);
     const [searchValues, setSearchValues] = useState<MediaDetailElementType[]>([]);
@@ -195,4 +195,4 @@ export const ParticipantInput = ({uuid, resource, initialValues}: TagInputType) 
     );
 }
 
-export default ParticipantInput;
+export default TagInput;

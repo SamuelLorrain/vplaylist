@@ -14,8 +14,3 @@ CREATE TABLE IF NOT EXISTS "data_video_participant" (
     "participant_uuid" bigint NOT NULL REFERENCES "data_participant" ("uuid") DEFERRABLE INITIALLY DEFERRED
 );
 
-CREATE TABLE IF NOT EXISTS "data_participant_type" (
-    "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "participant_uuid" BLOB NOT NULL REFERENCES "data_participant" ("uuid") DEFERRABLE INITIALLY DEFERRED,
-    "type_id" bigint NOT NULL REFERENCES "data_type" ("id") DEFERRABLE INITIALLY DEFERRED
-);

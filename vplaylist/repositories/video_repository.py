@@ -202,9 +202,9 @@ class VideoRepository:
             QueryConstructor("data_video")
             .add_where_clause("data_video.uuid = ?")
             .add_outer_join(
-                "data_video_type", "data_video_type.video_id = data_video.id"
+                "data_video_type", "data_video_type.video_uuid = data_video.uuid"
             )
-            .add_outer_join("data_type", "data_video_type.type_id = data_type.id")
+            .add_outer_join("data_type", "data_video_type.type_uuid = data_type.uuid")
             .add_param(str(uuid))
             .add_select(
                 [
@@ -257,7 +257,7 @@ class VideoRepository:
                 "data_participant_type",
                 "data_participant_type.participant_uuid = data_participant.uuid",
             )
-            .add_outer_join("data_type", "data_participant_type.type_id = data_type.id")
+            .add_outer_join("data_type", "data_participant_type.type_uuid = data_type.uuid")
             .add_join(
                 "data_video_participant",
                 "data_video_participant.participant_uuid = data_participant.uuid",
@@ -273,6 +273,7 @@ class VideoRepository:
                     "data_type.name",
                     "data_type.note",
                     "data_participant.uuid as data_participant_uuid",
+                    "data_type.uuid as data_type_uuid",
                 ]
             )
         )
@@ -287,7 +288,7 @@ class VideoRepository:
         for i in results:
             participant = HashableParticipant(name=i[0], note=i[1], uuid=UUID(i[4]))
             if i[2]:
-                tag = Tag(name=i[2], note=i[3])
+                tag = Tag(name=i[2], note=i[3], uuid=i[5])
                 if actor_mapping.get(participant, False):
                     actor_mapping[participant].append(tag)
                 else:

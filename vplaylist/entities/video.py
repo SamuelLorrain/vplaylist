@@ -14,6 +14,7 @@ class Film(BaseModel):
 
 
 class Tag(BaseModel):
+    uuid: UUID
     name: str
     note: Optional[int]
 

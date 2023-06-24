@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { useRecoilState } from 'recoil';
 import { currentPlaylistElement, openVideoDetails, autodiscoveryMode } from '@/contexts/recoilState';
 import UpdateInput from './UpdateInput';
-import ParticipantInput from './ParticipantInput';
+import TagInput from './TagInput';
 
 const VideoDetails: React.FC = () => {
     const [autoDiscoveryModeState, setAutoDiscoveryModeState] = useRecoilState(autodiscoveryMode);
@@ -30,7 +30,7 @@ const VideoDetails: React.FC = () => {
               <ul>
                 <li>name : <UpdateInput type="text" value={data ? data.name : ''} uuid={currentPlaylistElementState.uuid} updatedValue="name"/></li>
                 <li>participants:
-                    <ParticipantInput
+                    <TagInput
                         initialValues={data?.participants ?? []}
                         resource="participant"
                         uuid={currentPlaylistElementState.uuid}/>
@@ -38,9 +38,9 @@ const VideoDetails: React.FC = () => {
                 <li>film : {data.film}</li>
                 <li>studio : {data.studio}</li>
                 <li>tags:
-                    <ParticipantInput
+                    <TagInput
                         initialValues={data?.tags ?? []}
-                        resource="tags"
+                        resource="tag"
                         uuid={currentPlaylistElementState.uuid}/>
                 </li>
                 <li>

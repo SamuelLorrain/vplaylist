@@ -9,17 +9,25 @@ from pydantic import BaseModel
 
 from vplaylist.actions.create_analytics import create_analytics
 from vplaylist.actions.create_participant import create_participant
+from vplaylist.actions.create_tag import create_tag
 from vplaylist.actions.create_playlist import create_playlist
 from vplaylist.actions.create_video_participant_relation import (
     create_video_participant_relation,
 )
+from vplaylist.actions.create_video_tag_relation import (
+    create_video_tag_relation,
+)
 from vplaylist.actions.delete_video_participant_relation import (
     delete_video_participant_relation,
+)
+from vplaylist.actions.delete_video_tag_relation import (
+    delete_video_tag_relation,
 )
 from vplaylist.actions.fetch_video import fetch_video
 from vplaylist.actions.fetch_video_details import fetch_video_details
 from vplaylist.actions.patch_video_details import modify_video_details
 from vplaylist.actions.search_participant import search_participant
+from vplaylist.actions.search_tag import search_tag
 from vplaylist.entities.analytics import AnalyticEvent, Analytics
 from vplaylist.entities.search_video import (
     Quality,
@@ -137,8 +145,18 @@ class ParticipantParams(BaseModel):
     name: str
 
 
+@app.get("/participant")
+async def get_participants(search: str = ""):
+    search_result = []
+    if search == "":
+        search_result = search_participant(None)
+    else:
+        search_result = search_participant(search)
+    return search_result
+
+
 @app.post("/participant")
-async def upload_participant(participant_params: ParticipantParams) -> BaseModel:
+async def upload_participant(participant_params: ParticipantParams):
     return create_participant(participant_params.name)
 
 
@@ -158,11 +176,37 @@ async def remove_video_participant_relation(
     return Response("", status_code=201)
 
 
-@app.get("/participant")
-async def get_participants(search: str = "") -> Sequence[BaseModel]:
+class TagParams(BaseModel):
+    name: str
+
+
+@app.get("/tag")
+async def get_tags(search: str = ""):
+
     search_result = []
     if search == "":
-        search_result = search_participant(None)
+        search_result = search_tag(None)
     else:
-        search_result = search_participant(search)
+        search_result = search_tag(search)
     return search_result
+
+
+@app.post("/tag")
+async def upload_tag(tag_params: TagParams):
+    return create_tag(tag_params.name)
+
+
+@app.post("/video/{video_uuid}/tag/{tag_uuid}")
+async def add_video_tag_relation(
+    video_uuid: UUID, tag_uuid: UUID
+) -> Response:
+    create_video_tag_relation(video_uuid, tag_uuid)
+    return Response("", status_code=201)
+
+
+@app.delete("/video/{video_uuid}/tag/{tag_uuid}")
+async def remove_video_tag_relation(
+    video_uuid: UUID, tag_uuid: UUID
+) -> Response:
+    delete_video_tag_relation(video_uuid, tag_uuid)
+    return Response("", status_code=201)

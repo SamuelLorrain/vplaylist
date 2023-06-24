@@ -6,29 +6,11 @@ CREATE TABLE IF NOT EXISTS "data_rootpath" (
     "path" text NOT NULL UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS "data_studio_type" (
-    "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "studio_id" bigint NOT NULL REFERENCES "data_studio" ("id") DEFERRABLE INITIALLY DEFERRED,
-    "type_id" bigint NOT NULL REFERENCES "data_type" ("id") DEFERRABLE INITIALLY DEFERRED
-);
-
 
 CREATE TABLE IF NOT EXISTS "data_studio" (
     "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
     "name" varchar(100) NOT NULL UNIQUE,
     "note" integer NULL
-);
-
-CREATE TABLE IF NOT EXISTS "data_type" (
-    "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "name" varchar(30) NOT NULL UNIQUE,
-    "note" integer NULL
-);
-
-CREATE TABLE IF NOT EXISTS "data_video_type" (
-    "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "video_id" bigint NOT NULL REFERENCES "data_video" ("id") DEFERRABLE INITIALLY DEFERRED,
-    "type_id" bigint NOT NULL REFERENCES "data_type" ("id") DEFERRABLE INITIALLY DEFERRED
 );
 
 CREATE TABLE IF NOT EXISTS "data_video" (

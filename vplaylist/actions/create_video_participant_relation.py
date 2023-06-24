@@ -1,5 +1,4 @@
 from uuid import UUID
-
 from vplaylist.repositories.participant_repository import ParticipantRepository
 
 
