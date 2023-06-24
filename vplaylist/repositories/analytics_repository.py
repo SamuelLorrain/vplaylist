@@ -1,10 +1,11 @@
-from vplaylist.entities.analytics import Analytics
 import sqlite3
+
 from vplaylist.config.config_registry import ConfigRegistry
+from vplaylist.entities.analytics import Analytics
 
 
 class AnalyticsRepository:
-    def __init__(self):
+    def __init__(self) -> None:
         self.config_registry = ConfigRegistry()
         self.db_file = self.config_registry.db_file
 
@@ -20,7 +21,7 @@ class AnalyticsRepository:
         """
         cursor.execute(
             insert_analytic_query,
-            (analytics.date_analytics.timestamp(), str(analytics.video_uuid))
+            (analytics.date_analytics.timestamp(), str(analytics.video_uuid)),
         )
         analytic_id = cursor.fetchall()
         conn.commit()
@@ -32,13 +33,12 @@ class AnalyticsRepository:
         """
         params_list = []
         for i in analytics.events:
-            insert_analytics_event_query = insert_analytics_event_query + "(?, ?, ?, ?),"
-            params_list.extend([
-                i.event_type,
-                i.value,
-                i.event_datetime.timestamp(),
-                analytic_id[0][0]
-            ])
+            insert_analytics_event_query = (
+                insert_analytics_event_query + "(?, ?, ?, ?),"
+            )
+            params_list.extend(
+                [i.event_type, i.value, i.event_datetime.timestamp(), analytic_id[0][0]]
+            )
         insert_analytics_event_query = insert_analytics_event_query[:-1] + ";"
         cursor.execute(insert_analytics_event_query, params_list)
         conn.commit()

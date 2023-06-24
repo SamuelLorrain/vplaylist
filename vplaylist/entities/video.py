@@ -19,6 +19,7 @@ class Tag(BaseModel):
 
 
 class Participant(BaseModel):
+    uuid: UUID
     name: str
     tags: list[Tag]
     note: Optional[int]

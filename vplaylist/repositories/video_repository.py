@@ -255,14 +255,16 @@ class VideoRepository:
             .add_where_clause("data_video.uuid = ?")
             .add_outer_join(
                 "data_participant_type",
-                "data_participant_type.participant_id = data_participant.id",
+                "data_participant_type.participant_uuid = data_participant.uuid",
             )
             .add_outer_join("data_type", "data_participant_type.type_id = data_type.id")
             .add_join(
                 "data_video_participant",
-                "data_video_participant.participant_id = data_participant.id",
+                "data_video_participant.participant_uuid = data_participant.uuid",
             )
-            .add_join("data_video", "data_video_participant.video_id = data_video.id")
+            .add_join(
+                "data_video", "data_video_participant.video_uuid = data_video.uuid"
+            )
             .add_param(str(uuid))
             .add_select(
                 [
@@ -270,6 +272,7 @@ class VideoRepository:
                     "data_participant.note",
                     "data_type.name",
                     "data_type.note",
+                    "data_participant.uuid as data_participant_uuid",
                 ]
             )
         )
@@ -277,19 +280,24 @@ class VideoRepository:
         query_string = data_participants_query.get_query_string()
         db_connection = sqlite3.connect(str(self.db_file))
         results = db_connection.execute(query_string, params).fetchall()
-        HashableParticipant = namedtuple("HashableParticipant", ["name", "note"])
+        HashableParticipant = namedtuple(
+            "HashableParticipant", ["name", "note", "uuid"]
+        )
         actor_mapping: MutableMapping[HashableParticipant, list[Tag]] = dict()
         for i in results:
-            participant = HashableParticipant(name=i[0], note=i[1])
-            tag = Tag(name=i[2], note=i[3])
-            if actor_mapping.get(participant, False):
-                actor_mapping[participant].append(tag)
+            participant = HashableParticipant(name=i[0], note=i[1], uuid=UUID(i[4]))
+            if i[2]:
+                tag = Tag(name=i[2], note=i[3])
+                if actor_mapping.get(participant, False):
+                    actor_mapping[participant].append(tag)
+                else:
+                    actor_mapping[participant] = [tag]
             else:
-                actor_mapping[participant] = [tag]
+                actor_mapping[participant] = []
         participant_list: list[Participant] = []
         for key, value in actor_mapping.items():
             participant_list.append(
-                Participant(name=key.name, note=key.note, tags=value)
+                Participant(name=key.name, note=key.note, tags=value, uuid=key.uuid)
             )
 
         return participant_list
@@ -317,16 +325,15 @@ class VideoRepository:
             query_params.append(details.name)
             sql_set_string = sql_set_string + "\nSET name = ?"
         if details.note is not None:
-            query_params.append(details.note)
+            query_params.append(str(details.note))
             sql_set_string = sql_set_string + "\nSET note = ?"
         if details.date_down is not None:
-            query_params.append(details.date_down)
+            query_params.append(str(details.date_down))
             sql_set_string = sql_set_string + "\nSET date_down = ?"
         query_params.append(str(uuid))
         db_connection.execute(
-                f"UPDATE data_video\n{sql_set_string}\nWHERE uuid = ?",
-                query_params
-            )
+            f"UPDATE data_video\n{sql_set_string}\nWHERE uuid = ?", query_params
+        )
         db_connection.commit()
         db_connection.close()
         return True
