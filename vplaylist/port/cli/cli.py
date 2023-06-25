@@ -1,6 +1,7 @@
 from vplaylist.actions.clean_collection import clean_collection
 from vplaylist.actions.create_playlist import create_playlist
 from vplaylist.actions.update_collection import update_collection
+from vplaylist.actions.generate_thumbnails import generate_thumbnails
 from vplaylist.entities.search_video import SearchVideo
 from vplaylist.port.cli.parser import CliParser
 from vplaylist.services.play_playlist_service import PlayPlaylistService
@@ -16,8 +17,10 @@ class Cli:
     def route_args(self) -> None:
         if self.args["generate"]:
             self.update_collection_controller()
-        if self.args["clean_database"]:
+        elif self.args["clean_database"]:
             self.clean_collection_controller()
+        elif self.args["generate_thumbnails"]:
+            self.generate_thumbnails_controller()
         else:
             self.create_playlist_controller()
 
@@ -34,6 +37,10 @@ class Cli:
             print("database successfully cleaned!")
         else:
             print("error while cleaning database!")
+
+    def generate_thumbnails_controller(self) -> None:
+        print("generating thumbnails")
+        generate_thumbnails()
 
     def create_playlist_controller(self) -> None:
         search_video = SearchVideo(

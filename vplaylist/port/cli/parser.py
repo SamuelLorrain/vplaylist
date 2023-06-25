@@ -150,7 +150,18 @@ class CliParser:
             help="show debug informations",
         )
 
+    def _init_admin_utils_commands(self) -> None:
+        self.parser.add_argument(
+            "--generate-thumbnails",
+            action="store_const",
+            const=True,
+            default=False,
+            dest="generate_thumbnails",
+            help="generate thumbnails from video database",
+        )
+
     def _init_parser_commands(self) -> None:
         self._init_search_video_parser_commands()
         self._init_generate_db_parser_commands()
         self._init_clean_db_parser_commands()
+        self._init_admin_utils_commands()

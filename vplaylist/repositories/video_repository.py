@@ -32,6 +32,46 @@ class VideoRepository:
         self.db_paths = self.config_registry.db_paths
         self.ignore_paths = self.config_registry.ignore_paths
 
+    def get_all_generator(self):
+        db_connection = sqlite3.connect(self.db_file)
+        query = """
+            select data_video.path,
+                   data_rootpath.path,
+                   height,
+                   width,
+                   uuid,
+                   name,
+                   film,
+                   date_down,
+                   note,
+                   lu
+            from data_video
+            join data_rootpath on data_video.rootpath_id = data_rootpath.id
+        """
+        result = db_connection.execute(query)
+        d: list[tuple] = list(tuple())
+
+        def video_from_result(video_result: tuple) -> Video:
+            return Video(
+                path=Path(video_result[0]),
+                rootpath=RootPath(path=Path(video_result[1])),
+                height=video_result[2],
+                width=video_result[3],
+                uuid=video_result[4],
+                name=video_result[5],
+                film=video_result[6],
+                date_down=video_result[7],
+                note=video_result[8],
+                lu=video_result[9],
+            )
+        while d is not None:
+            d = result.fetchone()
+            if d is None:
+                break
+            yield video_from_result(d)
+        db_connection.close()
+
+
     def fetch_video(self, uuid: UUID) -> Video:
         db_connection = sqlite3.connect(self.db_file)
         cursor = db_connection.execute(

@@ -21,6 +21,7 @@ class ConfigFileDatabaseStructure(BaseModel):
     db_paths: list[str]
     ignore_paths: list[str]
     db_file: str
+    thumbnail_folder: Optional[str]
 
 
 class ConfigFileSearchStructure(BaseModel):
@@ -105,3 +106,11 @@ class ConfigRegistry(metaclass=Singleton):
         connection = sqlite3.connect(self.db_file)
         cursor = connection.execute("select * from data_best_search")
         return [search_term[0] for search_term in cursor.fetchall()]
+
+    @cached_property
+    def thumbnail_folder(self) -> Path:
+        if self.config.database.thumbnail_folder:
+            folder = self.config.database.thumbnail_folder
+        else:
+            folder = "thumbnails"
+        return Path(os.path.dirname(__file__)) / "../.." / folder

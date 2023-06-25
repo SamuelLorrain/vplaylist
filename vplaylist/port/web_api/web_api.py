@@ -5,6 +5,7 @@ from uuid import UUID
 from dotenv import dotenv_values
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from vplaylist.actions.create_analytics import create_analytics
@@ -28,6 +29,7 @@ from vplaylist.actions.fetch_video_details import fetch_video_details
 from vplaylist.actions.patch_video_details import modify_video_details
 from vplaylist.actions.search_participant import search_participant
 from vplaylist.actions.search_tag import search_tag
+from vplaylist.config.config_registry import ConfigRegistry
 from vplaylist.entities.analytics import AnalyticEvent, Analytics
 from vplaylist.entities.search_video import (
     Quality,
@@ -55,6 +57,14 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+config = ConfigRegistry()
+
+app.mount(
+    "/static/thumbnails/",
+    StaticFiles(directory=str(config.thumbnail_folder)),
+    name="thumbnails"
 )
 
 

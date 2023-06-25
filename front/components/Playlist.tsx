@@ -34,12 +34,13 @@ export default function Playlist() {
                 <div key={point.uuid} onClick={() => updateCurrentMedia(point.uuid, idx)}>
                     <div className={
                        (point.uuid === currentPlaylistElementState.uuid) ?
-                       "bg-secondary/100 p-2" :
-                       "hover:bg-secondary/80 cursor-pointer p-2"
+                       "bg-secondary/100 p-2 flex items-center" :
+                       "hover:bg-secondary/80 cursor-pointer p-2 flex items-center"
                     }>
-                        <div>
-                            {point.path}
+                        <div className="bg-black h-15">
+                            <img src={`${process.env.NEXT_PUBLIC_BACK_HOST}/static/thumbnails/${point.uuid}.jpg`} className="block"/>
                         </div>
+                        <div>{point.path}</div>
                     </div>
                     <Separator/>
                 </div>
