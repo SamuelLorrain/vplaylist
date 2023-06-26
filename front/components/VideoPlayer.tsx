@@ -216,6 +216,7 @@ const VideoPlayer: React.FC = () => {
               analytics.updateAnalysis({type: "play", value: (e.target as HTMLMediaElement).currentTime})
             }
           }
+          autoPlay
           >
         </video>
       </div>
@@ -241,6 +242,7 @@ const VideoPlayer: React.FC = () => {
                 }
                 setIsDisplayingControl(true)
              }}
+             onClick={(e) => e.stopPropagation()}
         >
           {
             isVideoPlaying ?

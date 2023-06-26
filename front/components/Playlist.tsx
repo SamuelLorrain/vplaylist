@@ -34,13 +34,15 @@ export default function Playlist() {
                 <div key={point.uuid} onClick={() => updateCurrentMedia(point.uuid, idx)}>
                     <div className={
                        (point.uuid === currentPlaylistElementState.uuid) ?
-                       "bg-secondary/100 p-2 flex items-center" :
-                       "hover:bg-secondary/80 cursor-pointer p-2 flex items-center"
+                       "bg-secondary/100 p-2 flex h-32" :
+                       "hover:bg-secondary/80 cursor-pointer p-2 flex h-32"
                     }>
-                        <div className="bg-black h-15">
-                            <img src={`${process.env.NEXT_PUBLIC_BACK_HOST}/static/thumbnails/${point.uuid}.jpg`} className="block"/>
+                        <div className="bg-black h-15 w-1/2 shrink-0 flex justify-center items-center overflow-hidden border-2 border-black">
+                            <img src={`${process.env.NEXT_PUBLIC_BACK_HOST}/static/thumbnails/${point.uuid}.jpg`} className="overflow-hidden block"/>
                         </div>
-                        <div>{point.path}</div>
+                        <div className="pl-1 w-1/2 shrink-0 overflow-hidden">
+                            {point.path}
+                        </div>
                     </div>
                     <Separator/>
                 </div>
@@ -51,3 +53,4 @@ export default function Playlist() {
     }
     return <div>is loading...</div>;
 }
+
