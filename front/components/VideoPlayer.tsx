@@ -64,6 +64,8 @@ const VideoPlayer: React.FC = () => {
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [isDisplayingControl, setIsDisplayingControl] = useState(false);
     const [currentDisplayingControlTimeout, setCurrentDisplayingControlTimeout] = useState<any>(null);
+    const [duration, setDuration] = useState(0);
+    const [currentTime, setCurrentTime] = useState(0);
 
     const videoRef = useRef<HTMLMediaElement>(null);
     const videoContainerRef = useRef<HTMLDivElement>(null);
@@ -82,15 +84,18 @@ const VideoPlayer: React.FC = () => {
         return () => {
             removeEventListener('fullscreenchange', fullScreenChangeHandler)
         }
-    }, []);
+    }, [setIsFullScreen]);
 
     useEffect(() => {
         const videoEl = videoRef.current;
         if (videoEl == null) {
             return;
         }
-        setTimeout(() => setIsVideoPlaying(getIsVideoPlaying(videoEl)), 500);
-    }, [videoRef.current, currentPlaylistElementState.uuid]);
+        setTimeout(() => {
+            setIsVideoPlaying(getIsVideoPlaying(videoEl))
+            setDuration(videoEl.duration);
+        }, 500);
+    }, [videoRef.current, currentPlaylistElementState.uuid, setIsVideoPlaying, setDuration]);
 
     useEffect(() => {
         if (videoRef.current == null) {
@@ -204,6 +209,7 @@ const VideoPlayer: React.FC = () => {
           onClick={() => {!globalKeydownEventIsCancelledState && togglePlay(videoRef.current, setIsVideoPlaying)}}
           onSeeked={(e) => analytics.updateAnalysis({type: "seek", value: (e.target as HTMLMediaElement).currentTime})}
           onTimeUpdate={(e) => {
+            setCurrentTime((e.target as HTMLMediaElement).currentTime);
             setPlayingPercentage(getPlayingPercentage(e.target as HTMLMediaElement))
           }}
           onPause={(e) => {
@@ -255,6 +261,9 @@ const VideoPlayer: React.FC = () => {
             className="h-2 cursor-pointer"
             value={playingPercentage} max={100} onClick={(e) => {e.stopPropagation(); videoRef?.current?.fastSeek(seekWithClick(videoRef.current, progressBarRef.current, e))}}
           />
+          <div className="text-white">
+            {currentTime.toFixed(0)} / {!isNaN(duration) && duration.toFixed(0) }
+          </div>
           {
             !isFullScreen ?
             <Maximize className="cursor-pointer" color="white" onClick={(e) => {

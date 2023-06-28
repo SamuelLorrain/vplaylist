@@ -4,6 +4,17 @@ import { useNewPlaylist } from '@/hooks/videoDetails';
 import { useRecoilState } from 'recoil';
 import { playlist, currentPlaylistElement } from '@/contexts/recoilState';
 
+const FORMATED_PATH_MAX_LENGTH = 70;
+
+function formatPath(path: string): string {
+    const splittedPath = path.split('/');
+    const name = splittedPath[splittedPath.length - 1];
+    if (name.length < FORMATED_PATH_MAX_LENGTH) {
+        return name;
+    }
+    return name.slice(0, FORMATED_PATH_MAX_LENGTH).trimEnd() + '...';
+}
+
 export default function Playlist() {
     const { data, error } = useNewPlaylist()
     const [playlistState, setPlaylistState] = useRecoilState(playlist);
@@ -38,10 +49,12 @@ export default function Playlist() {
                        "hover:bg-secondary/80 cursor-pointer p-2 flex h-32"
                     }>
                         <div className="bg-black h-15 w-1/2 shrink-0 flex justify-center items-center overflow-hidden border-2 border-black">
-                            <img src={`${process.env.NEXT_PUBLIC_BACK_HOST}/static/thumbnails/${point.uuid}.jpg`} className="overflow-hidden block"/>
+                            <img src={`${process.env.NEXT_PUBLIC_BACK_HOST}/static/thumbnails/${point.uuid}.jpg`}
+                                 alt={`thumbnail-${point.path}-${point.uuid}`}
+                                 className="overflow-hidden block"/>
                         </div>
-                        <div className="pl-1 w-1/2 shrink-0 overflow-hidden">
-                            {point.path}
+                        <div className="pl-1 w-1/2 shrink-0 overflow-hidden self-end">
+                          {formatPath(point.path)}
                         </div>
                     </div>
                     <Separator/>
