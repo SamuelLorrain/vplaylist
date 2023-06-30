@@ -1,5 +1,8 @@
-export const fetcher = async (url: string) => {
-    return fetch(url)
-        .then(res => res.json())
+export const fetcher = async ({url, token}: {url: string, token: string}) => {
+    return fetch(url, {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    }).then(res => res.json())
 }
 

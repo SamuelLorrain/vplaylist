@@ -9,8 +9,8 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { XCircle } from 'lucide-react';
-import { globalKeydownEventIsCancelled } from '@/contexts/recoilState';
-import { useSetRecoilState } from 'recoil';
+import { globalKeydownEventIsCancelled, authenticationToken } from '@/contexts/recoilState';
+import { useSetRecoilState, useRecoilValue } from 'recoil';
 import {
     Skeleton
 } from '@/components/ui/skeleton';
@@ -58,10 +58,13 @@ const addNewParticipant = async (name: string, resource: string) => {
     return response.json();
 };
 
-const addParticipantRelation = async (video_uuid: string, resource_uuid: string, resource: string) => {
+const addParticipantRelation = async (video_uuid: string, resource_uuid: string, resource: string, token: string) => {
     const url = `${process.env.NEXT_PUBLIC_BACK_HOST}/video/${video_uuid}/${resource}/${resource_uuid}`;
     const response = await fetch(url, {
         method: 'POST',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
     });
     if (response.status >= 400) {
         throw new Error(`Unable to add new ${resource} relation`);
@@ -69,10 +72,13 @@ const addParticipantRelation = async (video_uuid: string, resource_uuid: string,
     return response;
 };
 
-const removeParticipantRelation = async (video_uuid: string, resource_uuid: string, resource: string) => {
+const removeParticipantRelation = async (video_uuid: string, resource_uuid: string, resource: string, token: string) => {
     const url = `${process.env.NEXT_PUBLIC_BACK_HOST}/video/${video_uuid}/${resource}/${resource_uuid}`;
     const response = await fetch(url, {
         method: 'DELETE',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
     });
     if (response.status >= 400) {
         throw new Error(`Unable to remove ${resource}`);
@@ -86,6 +92,7 @@ export const TagInput = ({uuid, resource, initialValues}: TagInputType) => {
     const [searchValues, setSearchValues] = useState<MediaDetailElementType[]>([]);
     const [isLoadingSearch, setIsLoadingSearch] = useState<boolean>();
     const setIsCancelledKeydownEvent = useSetRecoilState(globalKeydownEventIsCancelled);
+    const authenticationTokenValue = useRecoilValue(authenticationToken);
 
     useEffect(() => {
         setValues([...initialValues]);
@@ -103,7 +110,7 @@ export const TagInput = ({uuid, resource, initialValues}: TagInputType) => {
                       return existingValue.name != value.name;
                     })
                   })
-                  removeParticipantRelation(uuid, value.uuid, resource)
+                  removeParticipantRelation(uuid, value.uuid, resource, authenticationTokenValue)
                   .catch(() => {
                     setValues(existingValues => [...existingValues, value])
                   })
@@ -153,7 +160,7 @@ export const TagInput = ({uuid, resource, initialValues}: TagInputType) => {
                                 className="cursor-pointer"
                                 onClick={() => {
                                         setValues(values => [...values, v]);
-                                        addParticipantRelation(uuid, v.uuid, resource)
+                                        addParticipantRelation(uuid, v.uuid, resource, authenticationTokenValue)
                                         .catch(() => {
                                             setValues(values => values.filter(x => {
                                                 return x.name != v.name
@@ -177,7 +184,7 @@ export const TagInput = ({uuid, resource, initialValues}: TagInputType) => {
                         .then(value => {
                             setValues(values => [...values, value]);
                             setNewValue("");
-                            addParticipantRelation(uuid, value.uuid, resource)
+                            addParticipantRelation(uuid, value.uuid, resource, authenticationTokenValue)
                             .catch(() => {
                                 setValues(values => values.filter(x => {
                                     return x.name != value.name

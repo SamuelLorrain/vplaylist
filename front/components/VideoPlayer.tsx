@@ -4,7 +4,8 @@ import {
    currentPlaylistElement,
    playlist,
    globalKeydownEventIsCancelled,
-   autodiscoveryMode
+   autodiscoveryMode,
+   authenticationToken
 } from '@/contexts/recoilState';
 import { Analytics } from '@/lib/analytics';
 import { cancelAutoDiscover, autoDiscover } from '@/lib/autodiscover';
@@ -39,7 +40,7 @@ function seekWithClick(videoEl: HTMLMediaElement|null, progressBar: any, event: 
     return videoEl.duration * ratio;
 }
 
-function togglePlay(videoEl: HTMLMediaElement|null, setter) {
+function togglePlay(videoEl: HTMLMediaElement|null, setter: Function) {
     if (videoEl == null) {
         return;
     }
@@ -52,12 +53,17 @@ function togglePlay(videoEl: HTMLMediaElement|null, setter) {
     }
 }
 
+function secondToTime(seconds: number): string {
+    const date = new Date()
+    date.setSeconds(Math.floor(seconds));
+    return date.toISOString().substring(11,19);
+}
+
 const VideoPlayer: React.FC = () => {
     const [currentPlaylistElementState, setCurrentPlaylistElementState] = useRecoilState(currentPlaylistElement);
     const [globalKeydownEventIsCancelledState] = useRecoilState(globalKeydownEventIsCancelled);
     const autoDiscoveryModeState = useRecoilValue(autodiscoveryMode);
     const [playlistState] = useRecoilState(playlist);
-    const src = `http://127.0.0.1:8000/video/${currentPlaylistElementState.uuid}`;
     const analytics = new Analytics(currentPlaylistElementState.uuid);
     const [isVideoPlaying, setIsVideoPlaying] = useState(false);
     const [playingPercentage, setPlayingPercentage] = useState(0);
@@ -70,6 +76,9 @@ const VideoPlayer: React.FC = () => {
     const videoRef = useRef<HTMLMediaElement>(null);
     const videoContainerRef = useRef<HTMLDivElement>(null);
     const progressBarRef = useRef<HTMLDivElement>(null);
+    const authenticationTokenValue = useRecoilValue(authenticationToken);
+
+    const src = `http://127.0.0.1:8000/video/${currentPlaylistElementState.uuid}/t/${authenticationTokenValue}`;
 
 
     useEffect(() => {
@@ -94,7 +103,7 @@ const VideoPlayer: React.FC = () => {
         setTimeout(() => {
             setIsVideoPlaying(getIsVideoPlaying(videoEl))
             setDuration(videoEl.duration);
-        }, 500);
+        }, 1000);
     }, [videoRef.current, currentPlaylistElementState.uuid, setIsVideoPlaying, setDuration]);
 
     useEffect(() => {
@@ -262,7 +271,7 @@ const VideoPlayer: React.FC = () => {
             value={playingPercentage} max={100} onClick={(e) => {e.stopPropagation(); videoRef?.current?.fastSeek(seekWithClick(videoRef.current, progressBarRef.current, e))}}
           />
           <div className="text-white">
-            {currentTime.toFixed(0)} / {!isNaN(duration) && duration.toFixed(0) }
+            {secondToTime(currentTime)} / {!isNaN(duration) && secondToTime(duration) }
           </div>
           {
             !isFullScreen ?

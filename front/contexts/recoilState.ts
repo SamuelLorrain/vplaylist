@@ -40,3 +40,8 @@ export const autodiscoveryMode = atom({
     key: 'autodiscoveryMode',
     default: false
 })
+
+export const authenticationToken = atom({
+    key: 'authenticationToken',
+    default: ''
+})

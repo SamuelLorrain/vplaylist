@@ -14,6 +14,7 @@ my computer.
 ```sh
 poetry install           # Install back dependencies
 poetry run yoyo apply    # Apply migrations
+cp .env.example .env     # Don't forget to change the example JWT SECRET
 cd front/
 npm install              # Install front dependencies
 npm run dev              # 

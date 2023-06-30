@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel
+from dotenv import dotenv_values
 
 
 class ConfigFilePlaylistLengthStructure(BaseModel):
@@ -60,6 +61,7 @@ class ConfigRegistry(metaclass=Singleton):
         self.config: ConfigFileStructure = ConfigFileStructure.parse_obj(
             tomllib.loads(self.config_file_content)
         )
+        self.dotenv_config = dotenv_values(".env")
 
     @cached_property
     def db_file(self) -> Path:
@@ -114,3 +116,11 @@ class ConfigRegistry(metaclass=Singleton):
         else:
             folder = "thumbnails"
         return Path(os.path.dirname(__file__)) / "../.." / folder
+
+    @cached_property
+    def front_host(self):
+        return self.dotenv_config['FRONT_HOST']
+
+    @cached_property
+    def jwt_secret(self):
+        return self.dotenv_config['JWT_SECRET']

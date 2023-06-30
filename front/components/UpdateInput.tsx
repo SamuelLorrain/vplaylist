@@ -1,5 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import debounce from 'lodash/debounce';
+import { useRecoilValue } from 'recoil';
+import { authenticationToken } from '@/contexts/recoilState';
 
 type UpdateInputType = {
     value: string;
@@ -12,13 +14,15 @@ type UpdateInputType = {
 const UpdateInput = ({value, uuid, type, updatedValue, formatter}: UpdateInputType) => {
     const [displayedValue, setDisplayedValue] = useState<string|undefined>(value);
     const [isPending, setIsPending] = useState(false);
+    const authenticationTokenValue = useRecoilValue(authenticationToken);
 
     function updateDisplayName(oldValue: string|undefined, newValue: string) {
         const formatted = formatter ? formatter(newValue) : newValue;
         fetch(`${process.env.NEXT_PUBLIC_BACK_HOST}/video/${uuid}/details`, {
             method: "PUT",
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + authenticationTokenValue
             },
             body: JSON.stringify({
                 [updatedValue]: formatted,

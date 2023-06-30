@@ -8,3 +8,4 @@ scripts/
 __pycache__/*
 config.toml
 thumbnails/*
+.env

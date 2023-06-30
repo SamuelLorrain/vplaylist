@@ -1,6 +1,6 @@
 import { fetcher } from '@/lib/fetchers';
-import { searchOptions } from '@/contexts/recoilState';
-import { useRecoilState } from 'recoil';
+import { searchOptions, authenticationToken } from '@/contexts/recoilState';
+import { useRecoilState, useRecoilValue } from 'recoil';
 
 import useSWR from 'swr';
 
@@ -27,8 +27,9 @@ export function useGetNewPlaylistUrl() {
 
 export function useNewPlaylist() {
     const fetchUrl = useGetNewPlaylistUrl();
+    const token = useRecoilValue(authenticationToken);
     const { data, error }= useSWR(
-        fetchUrl.toString(),
+        token && {url: fetchUrl.toString(), token},
         fetcher,
         {
             revalidateOnFocus: false,
@@ -44,8 +45,9 @@ export function useNewPlaylist() {
 
 
 export function useVideoDetails(uuid: string|null) {
+    const token = useRecoilValue(authenticationToken);
     const { data, error }= useSWR(
-        () => (uuid != null) ? `${process.env.NEXT_PUBLIC_BACK_HOST}/video/${uuid}/details` : null,
+        () => (uuid && token) ? {url:`${process.env.NEXT_PUBLIC_BACK_HOST}/video/${uuid}/details`, token} : null,
         fetcher,
         {
             revalidateOnFocus: false,

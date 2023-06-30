@@ -10,6 +10,7 @@ from vplaylist.exceptions.validation_error import ValidationError
 
 @dataclass
 class RootPath:
+    id: int
     path: Path
 
 

@@ -1,14 +1,16 @@
 from datetime import datetime
-from typing import Optional, Sequence
+from typing import Optional, Annotated
 from uuid import UUID
+import json
 
-from dotenv import dotenv_values
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from vplaylist.actions.create_analytics import create_analytics
+from vplaylist.actions.create_new_user import create_new_account
+from vplaylist.actions.verify_account import verify_account
 from vplaylist.actions.create_participant import create_participant
 from vplaylist.actions.create_tag import create_tag
 from vplaylist.actions.create_playlist import create_playlist
@@ -31,6 +33,7 @@ from vplaylist.actions.search_participant import search_participant
 from vplaylist.actions.search_tag import search_tag
 from vplaylist.config.config_registry import ConfigRegistry
 from vplaylist.entities.analytics import AnalyticEvent, Analytics
+from vplaylist.entities.account import Account
 from vplaylist.entities.search_video import (
     Quality,
     SearchType,
@@ -44,12 +47,14 @@ from vplaylist.port.web_api.responses.create_playlist_response import (
 )
 from vplaylist.port.web_api.responses.video_details_response import VideoDetailsResponse
 from vplaylist.port.web_api.responses.video_stream_response import VideoStreamResponse
+from vplaylist.services.authentication_service import get_new_token
+from vplaylist.port.web_api.security.authentication import authorize_video_uuid, get_account
 
 app = FastAPI()
 
-dotenv_config = dotenv_values(".env")
+config = ConfigRegistry()
 
-origins = [dotenv_config["FRONT_HOST"]]
+origins = [config.front_host]
 
 app.add_middleware(
     CORSMiddleware,
@@ -59,7 +64,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-config = ConfigRegistry()
 
 app.mount(
     "/static/thumbnails/",
@@ -82,17 +86,21 @@ class CreatePlaylistParams(BaseModel):
 
 @app.get("/playlist/create")
 async def create_playlist_controller(
-    create_playlist_params: CreatePlaylistParams = Depends(),  # noqa: B008
+    account: Annotated[Optional[Account], Depends(get_account)],
+    create_playlist_params: CreatePlaylistParams = Depends()  # noqa: B008
 ) -> CreatePlaylistResponse:
     search_video = SearchVideo(**dict(create_playlist_params))
-    playlist = create_playlist(search_video)
-
+    playlist = create_playlist(account, search_video)
     video_list = [VideoResponse(path=str(i.path), uuid=str(i.uuid)) for i in playlist]
     return CreatePlaylistResponse(playlist=video_list)
 
 
-@app.get("/video/{uuid}")
-async def play_video(uuid: UUID, req: Request) -> VideoStreamResponse:
+# Sending the full token in URL
+# not the best practice, but it's to avoid
+# custom front logic (temporarily)
+@app.get("/video/{uuid}/t/{token}")
+async def play_video(uuid: UUID, token: str, req: Request) -> VideoStreamResponse:
+    authorize_video_uuid(uuid, "Bearer " + token)
     playable_video = fetch_video(uuid)
     if not playable_video:
         raise HTTPException(status_code=404, detail="Not Found")
@@ -100,7 +108,7 @@ async def play_video(uuid: UUID, req: Request) -> VideoStreamResponse:
 
 
 @app.get("/video/{uuid}/details")
-async def get_video_details(uuid: UUID) -> VideoDetailsResponse:
+async def get_video_details(uuid: Annotated[UUID, Depends(authorize_video_uuid)]) -> VideoDetailsResponse:
     video_details = fetch_video_details(uuid)
     return video_details
 
@@ -113,7 +121,7 @@ class VideoDetailsParams(BaseModel):
 
 @app.put("/video/{uuid}/details")
 async def patch_video_details(
-    uuid: UUID, video_details_params: VideoDetailsParams
+    uuid: Annotated[UUID, Depends(authorize_video_uuid)], video_details_params: VideoDetailsParams
 ) -> Response:
     modify_video_details(uuid, video_details_params)
     return Response("", status_code=201)
@@ -132,7 +140,7 @@ class VideoAnalyticsParams(BaseModel):
 
 @app.post("/video/{uuid}/analytics")
 async def upload_video_analytics(
-    uuid: UUID, video_analytics_params: VideoAnalyticsParams
+    uuid: Annotated[UUID, Depends(authorize_video_uuid)], video_analytics_params: VideoAnalyticsParams
 ) -> Response:
     events = [
         AnalyticEvent(
@@ -170,19 +178,19 @@ async def upload_participant(participant_params: ParticipantParams):
     return create_participant(participant_params.name)
 
 
-@app.post("/video/{video_uuid}/participant/{participant_uuid}")
+@app.post("/video/{uuid}/participant/{participant_uuid}")
 async def add_video_participant_relation(
-    video_uuid: UUID, participant_uuid: UUID
+    uuid: Annotated[UUID, Depends(authorize_video_uuid)], participant_uuid: UUID
 ) -> Response:
-    create_video_participant_relation(video_uuid, participant_uuid)
+    create_video_participant_relation(uuid, participant_uuid)
     return Response("", status_code=201)
 
 
-@app.delete("/video/{video_uuid}/participant/{participant_uuid}")
+@app.delete("/video/{uuid}/participant/{participant_uuid}")
 async def remove_video_participant_relation(
-    video_uuid: UUID, participant_uuid: UUID
+    uuid: Annotated[UUID, Depends(authorize_video_uuid)], participant_uuid: UUID
 ) -> Response:
-    delete_video_participant_relation(video_uuid, participant_uuid)
+    delete_video_participant_relation(uuid, participant_uuid)
     return Response("", status_code=201)
 
 
@@ -206,17 +214,53 @@ async def upload_tag(tag_params: TagParams):
     return create_tag(tag_params.name)
 
 
-@app.post("/video/{video_uuid}/tag/{tag_uuid}")
+@app.post("/video/{uuid}/tag/{tag_uuid}")
 async def add_video_tag_relation(
-    video_uuid: UUID, tag_uuid: UUID
+    uuid: Annotated[UUID, Depends(authorize_video_uuid)], tag_uuid: UUID
 ) -> Response:
-    create_video_tag_relation(video_uuid, tag_uuid)
+    create_video_tag_relation(uuid, tag_uuid)
     return Response("", status_code=201)
 
 
-@app.delete("/video/{video_uuid}/tag/{tag_uuid}")
+@app.delete("/video/{uuid}/tag/{tag_uuid}")
 async def remove_video_tag_relation(
-    video_uuid: UUID, tag_uuid: UUID
+    uuid: Annotated[UUID, Depends(authorize_video_uuid)], tag_uuid: UUID
 ) -> Response:
-    delete_video_tag_relation(video_uuid, tag_uuid)
+    delete_video_tag_relation(uuid, tag_uuid)
     return Response("", status_code=201)
+
+
+class AccountParams(BaseModel):
+    username: str
+    password: str
+
+
+@app.post('/register')
+async def register(account_params: AccountParams) -> Response:
+    account = create_new_account(
+        account_params.username,
+        account_params.password
+    )
+    if account is None:
+        return Response("", status_code=403)
+    token = get_new_token(account)
+    return Response(
+        json.dumps({"token": token}),
+        media_type="application/json",
+        status_code=201
+    )
+
+
+@app.post('/login')
+async def login(account_params: AccountParams) -> Response:
+    account = verify_account(
+        account_params.username,
+        account_params.password
+    )
+    if account is None:
+        return Response("", status_code=403)
+    token = get_new_token(account)
+    return Response(
+        json.dumps({"token": token}),
+        media_type="application/json"
+    )

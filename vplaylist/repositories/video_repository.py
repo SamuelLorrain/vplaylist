@@ -44,7 +44,8 @@ class VideoRepository:
                    film,
                    date_down,
                    note,
-                   lu
+                   lu,
+                   data_rootpath.id as 'data_rootpath_id'
             from data_video
             join data_rootpath on data_video.rootpath_id = data_rootpath.id
         """
@@ -54,7 +55,10 @@ class VideoRepository:
         def video_from_result(video_result: tuple) -> Video:
             return Video(
                 path=Path(video_result[0]),
-                rootpath=RootPath(path=Path(video_result[1])),
+                rootpath=RootPath(
+                    id=video_result[10],
+                    path=Path(video_result[1])
+                ),
                 height=video_result[2],
                 width=video_result[3],
                 uuid=video_result[4],
@@ -85,7 +89,8 @@ class VideoRepository:
                    film,
                    date_down,
                    note,
-                   lu
+                   lu,
+                   data_rootpath.id as data_rootpath_id
             from data_video
             join data_rootpath on data_video.rootpath_id = data_rootpath.id
             where uuid = ?
@@ -95,7 +100,7 @@ class VideoRepository:
         result = cursor.fetchone()
         return Video(
             path=Path(result[0]),
-            rootpath=RootPath(path=Path(result[1])),
+            rootpath=RootPath(id=result[10], path=Path(result[1])),
             height=result[2],
             width=result[3],
             uuid=result[4],
@@ -378,3 +383,21 @@ class VideoRepository:
         db_connection.commit()
         db_connection.close()
         return True
+
+    def video_is_in_rootpath(self, uuid: UUID, rootpaths: list[RootPath]) -> bool:
+        db_connection = sqlite3.connect(str(self.db_file))
+        query = (
+            QueryConstructor("data_video")
+            .add_select("uuid")
+            .add_where_clause("uuid = ?")
+            .add_where_clause(f"rootpath_id IN ({('?,'*len(rootpaths))[:-1]})")
+        )
+        query.add_param(str(uuid))
+        for i in rootpaths:
+            query.add_param(str(i.id))
+        cursor = db_connection.execute(query.get_query_string(), query.get_params())
+        result = cursor.fetchone()
+        db_connection.close()
+        if result:
+            return True
+        return False

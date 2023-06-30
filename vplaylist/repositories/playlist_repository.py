@@ -26,12 +26,15 @@ class PlaylistRepository:
         self.best = self.config_registry.best
         self.db_file = self.config_registry.db_file
 
-    def create_playlist(self, search: SearchVideo) -> Playlist:
-        query = self._convert_search_to_query(search)
+    def create_playlist(self, search: SearchVideo, filter_rootpath: list[RootPath]) -> Playlist:
+        query = self._convert_search_to_query(search, filter_rootpath)
+        print(query.get_query_string())
+        print(query.get_params())
         query_result = self._execute_query(query, search)
+        print(query_result)
         return self._format_query_result_to_playlist(query_result)
 
-    def _convert_search_to_query(self, search: SearchVideo) -> QueryConstructor:
+    def _convert_search_to_query(self, search: SearchVideo, filter_rootpath: list[RootPath]) -> QueryConstructor:
         # base query
         query = QueryConstructor("data_video")
         query = (
@@ -41,6 +44,7 @@ class PlaylistRepository:
             .add_select("width")
             .add_select("date_down")
             .add_select("uuid")
+            .add_select("data_rootpath.id as data_rootpath_id")
             .add_join("data_rootpath", "data_video.rootpath_id = data_rootpath.id")
             .add_where_clause(get_query_for_webm(search.webm))
             .add_where_clause(get_query_for_quality(search.quality))
@@ -54,10 +58,18 @@ class PlaylistRepository:
             query.change_order_clause(get_query_for_sorting(search.sorting))
         self._compute_search_term(query, search)
 
+        query = query.add_where_clause(
+            f"data_rootpath.id in ({('?,'*len(filter_rootpath))[:-1]})"
+        )
+        for i in filter_rootpath:
+            query = query.add_param(str(i.id))
+
         return query
 
     def _compute_search_term(
-        self, query: QueryConstructor, search: SearchVideo
+        self,
+        query: QueryConstructor,
+        search: SearchVideo,
     ) -> QueryConstructor:
         match search.search_type:
             case SearchType.NO_SEARCH:
@@ -103,7 +115,7 @@ class PlaylistRepository:
     ) -> Playlist:
         video_playlist = Playlist(
             Video(
-                rootpath=RootPath(path=Path(i[0])),
+                rootpath=RootPath(id=i[6], path=Path(i[0])),
                 path=Path(i[1]),
                 height=i[2],
                 width=i[3],
