@@ -2,16 +2,18 @@ import React, { useCallback, useState } from 'react';
 import debounce from 'lodash/debounce';
 import { useRecoilValue } from 'recoil';
 import { authenticationToken } from '@/contexts/recoilState';
+import { Input } from '@/components/ui/input';
 
 type UpdateInputType = {
     value: string;
+    className?: string;
     uuid: string;
     type: string;
     updatedValue: string;
     formatter?: (x: any) => string;
 };
 
-const UpdateInput = ({value, uuid, type, updatedValue, formatter}: UpdateInputType) => {
+const UpdateInput = ({value, uuid, type, updatedValue, className, formatter}: UpdateInputType) => {
     const [displayedValue, setDisplayedValue] = useState<string|undefined>(value);
     const [isPending, setIsPending] = useState(false);
     const authenticationTokenValue = useRecoilValue(authenticationToken);
@@ -48,8 +50,8 @@ const UpdateInput = ({value, uuid, type, updatedValue, formatter}: UpdateInputTy
         ), [uuid]);
 
     return (
-        <span>
-            <input
+        <div>
+            <Input className={className}
                 type={type}
                 value={displayedValue ?? ''}
                 onChange={(e) => {
@@ -59,7 +61,7 @@ const UpdateInput = ({value, uuid, type, updatedValue, formatter}: UpdateInputTy
                 }}
                 />
             {isPending ? 'is pending': ''}
-        </span>
+        </div>
     );
 }
 

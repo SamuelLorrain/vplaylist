@@ -11,12 +11,12 @@ export default function Player() {
         <RouteGuard>
           <div className="mb-5">
             <Toolbar/>
-            <div className="flex px-20 gap-5">
-              <div className="w-2/3">
+            <div className="lg:flex lg:px-5 xl:px-20 gap-5">
+              <div className="lg:w-2/3">
                 <VideoPlayer/>
                 <VideoDetails/>
               </div>
-              <div className="w-1/3">
+              <div className="lg:w-1/3">
                 <Playlist/>
               </div>
             </div>

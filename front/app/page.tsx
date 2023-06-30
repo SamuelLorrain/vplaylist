@@ -47,29 +47,36 @@ export default function LoginRegisterForm() {
     }, [isRegister]);
 
     return (
-      <div className="flex h-screen justify-center items-start pt-32">
-        <Card className="w-auto">
-            <CardHeader>
-                <CardTitle>{isRegister ? 'Create an account' : 'Welcome back'}</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <form onSubmit={handleSubmit}>
-                    <Label>username</Label>
-                    <Input type="text" name="username"/>
-                    <Label>password</Label>
-                    <Input type="password" name="password"/>
-                    <div className="flex flex-col justify-end mt-5 gap-2">
-                        <Button type="submit">
-                            {isRegister ? 'Register' : 'Login'}
-                        </Button>
-                        <Button variant="secondary" onClick={(e) => { e.preventDefault(); setIsRegister(v => !v)}}>
-                            {isRegister ? 'Login instead' : 'Register instead'}
-                        </Button>
-                    </div>
-                </form>
-            </CardContent>
-        </Card>
-      </div>
+      <>
+         <div className="flex py-5 px-10 justify-start items-center border-b-2 sticky top-0 mb-5 bg-white z-50">
+             <div className="text-2xl font-bold">
+                 Vplaylist
+             </div>
+         </div>
+        <div className="flex justify-center items-start pt-10 overflow-hidden">
+          <Card className="w-auto">
+              <CardHeader>
+                  <CardTitle>{isRegister ? 'Create an account' : 'Welcome back'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                  <form onSubmit={handleSubmit}>
+                      <Label>username</Label>
+                      <Input type="text" name="username"/>
+                      <Label>password</Label>
+                      <Input type="password" name="password"/>
+                      <div className="flex flex-col justify-end mt-5 gap-2">
+                          <Button type="submit">
+                              {isRegister ? 'Register' : 'Login'}
+                          </Button>
+                          <Button variant="secondary" onClick={(e) => { e.preventDefault(); setIsRegister(v => !v)}}>
+                              {isRegister ? 'Login instead' : 'Register instead'}
+                          </Button>
+                      </div>
+                  </form>
+              </CardContent>
+          </Card>
+        </div>
+      </>
     );
 }
 

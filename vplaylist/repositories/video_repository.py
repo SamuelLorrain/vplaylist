@@ -261,10 +261,10 @@ class VideoRepository:
                     "data_video.height",
                     "data_video.width",
                     "data_video.note",
-                    "data_video.name",
                     "data_type.name",
                     "data_type.note",
                     "data_video.path",
+                    "data_type.uuid",
                 ]
             )
         )
@@ -272,6 +272,7 @@ class VideoRepository:
         query_string = data_video_query.get_query_string()
         db_connection = sqlite3.connect(str(self.db_file))
         results = db_connection.execute(query_string, params).fetchall()
+        print(results)
         if len(results) < 1:
             return None
         video_detail_except_tags = results[0]
@@ -283,14 +284,14 @@ class VideoRepository:
             if video_detail_except_tags[1] is not None
             else None,
             studio=None,
-            tags=[Tag(name=i[9], note=i[10]) for i in results if i[9] is not None],
+            tags=[Tag(name=i[8], note=i[9], uuid=UUID(i[11])) for i in results if i[11] is not None],
             date_down=datetime.strptime(video_detail_except_tags[2], "%Y-%m-%d").date(),
             lu=video_detail_except_tags[4],
             height=video_detail_except_tags[5],
             width=video_detail_except_tags[6],
-            note=video_detail_except_tags[7],
-            name=video_detail_except_tags[8],
-            path=video_detail_except_tags[9],
+            note=video_detail_except_tags[3],
+            name=video_detail_except_tags[0],
+            path=video_detail_except_tags[10],
         )
         return video_details
 
