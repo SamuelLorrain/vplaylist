@@ -37,9 +37,15 @@ export default function Toolbar() {
   const setFetchContext = useSetRecoilState(searchOptions);
   const setGlobalKeydownEventIsCancelledState = useSetRecoilState(globalKeydownEventIsCancelled);
   const [isMobile, setIsMobile] = useState(true);
+  const [init, setInit] = useState(true);
 
   useEffect(() => {
-    const listener = () => setIsMobile(window.matchMedia("(max-width: 768px)").matches);
+    const mediaQuery = "(max-width: 900px)";
+    if (init) {
+        setIsMobile(window.matchMedia(mediaQuery).matches);
+        setInit(false);
+    }
+    const listener = () => setIsMobile(window.matchMedia(mediaQuery).matches);
     window.addEventListener('resize', listener);
     return () => window.removeEventListener('resize', listener);
    }, [setIsMobile])
