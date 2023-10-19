@@ -39,7 +39,7 @@ class Cli:
             print("error while cleaning database!")
 
     def generate_thumbnails_controller(self) -> None:
-        print("generating thumbnails")
+        print("generating thumbnails NOT WORKING")
         generate_thumbnails()
 
     def create_playlist_controller(self) -> None:

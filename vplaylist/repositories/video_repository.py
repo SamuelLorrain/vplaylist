@@ -75,7 +75,6 @@ class VideoRepository:
             yield video_from_result(d)
         db_connection.close()
 
-
     def fetch_video(self, uuid: UUID) -> Video:
         db_connection = sqlite3.connect(self.db_file)
         cursor = db_connection.execute(
