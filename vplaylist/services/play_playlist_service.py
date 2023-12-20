@@ -1,12 +1,14 @@
 from tempfile import NamedTemporaryFile
 
 from vplaylist.entities.playlist import Playlist
-from vplaylist.services.player import PlayerMPV
+from vplaylist.services.player import Player
+from vplaylist.app import App
 
 
 class PlayPlaylistService:
     def __init__(self, playlist: Playlist) -> None:
-        self.playlist = playlist
+        self.playlist: Playlist = playlist
+        self.player: Player = App().app(Player)
 
     def play_playlist(self) -> None:
         if len(self.playlist) < 1:
@@ -19,5 +21,5 @@ class PlayPlaylistService:
                 tmp.write(f"{video.fullpath}\n")
 
             tmp.seek(0)
-            self.player = PlayerMPV(tmp)
+            self.player.set_playlist(tmp)
             self.player.launch_playlist()

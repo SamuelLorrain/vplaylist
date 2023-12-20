@@ -9,7 +9,11 @@ import mpv  # type: ignore
 
 class Player(ABC):
     @abstractmethod
-    def __init__(self, playlist: IO[AnyStr]) -> None:
+    def __init__(self) -> None:
+        pass
+
+    @abstractmethod
+    def set_playlist(self, playlist: IO[AnyStr]) -> None:
         pass
 
     @abstractmethod
@@ -17,8 +21,8 @@ class Player(ABC):
         pass
 
 
-class PlayerMPV:
-    def __init__(self, playlist: IO[str]) -> None:
+class PlayerMPV(Player):
+    def __init__(self) -> None:
         self.player = mpv.MPV(
             log_handler=self.log_handler,
             input_default_bindings=True,
@@ -29,6 +33,9 @@ class PlayerMPV:
 
         self._init_key_press()
         self._init_events()
+        self.player.script_opt_append='osc-playlist_osc=no'
+
+    def set_playlist(self, playlist: IO[AnyStr]) -> None:
         self.player.loadlist(playlist.name)
 
     def log_handler(self, loglevel: str, component: str, message: str) -> None:
@@ -86,8 +93,11 @@ class PlayerMPV:
         del self.player
 
 
-class PlayerVLC:
-    def __init__(self, playlist: IO[str]) -> None:
+class PlayerVLC(Player):
+    def __init__(self) -> None:
+        pass
+
+    def set_playlist(self, playlist: IO[AnyStr]) -> None:
         self.playlist: IO[str] = playlist
 
     def launch_playlist(self) -> None:

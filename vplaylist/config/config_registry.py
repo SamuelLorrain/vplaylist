@@ -7,6 +7,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 from dotenv import dotenv_values
+from vplaylist.utils.singleton import Singleton
 
 
 class ConfigFilePlaylistLengthStructure(BaseModel):
@@ -33,22 +34,6 @@ class ConfigFileStructure(BaseModel):
     database: ConfigFileDatabaseStructure
     playlist: ConfigFilePlaylistStructure
     search: ConfigFileSearchStructure
-
-
-class Singleton(type):
-    """
-    put that here because we don't want to expose a
-    singleton interface. I only need a singleton for
-    the config class...
-    FIXME find a better behavior
-    """
-
-    _instances = {}  # type: ignore
-
-    def __call__(cls, *args, **kwargs):  # type: ignore
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
 
 
 class ConfigRegistry(metaclass=Singleton):
