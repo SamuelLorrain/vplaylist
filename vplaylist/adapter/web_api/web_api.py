@@ -64,7 +64,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 app.mount(
     "/static/thumbnails/",
     StaticFiles(directory=str(config.thumbnail_folder)),
@@ -91,6 +90,18 @@ async def create_playlist_controller(
 ) -> CreatePlaylistResponse:
     search_video = SearchVideo(**dict(create_playlist_params))
     playlist = create_playlist(account, search_video)
+    video_list = [VideoResponse(path=str(i.path), uuid=str(i.uuid)) for i in playlist]
+    return CreatePlaylistResponse(playlist=video_list)
+
+
+@app.get("/playlist/create/insecure")
+async def create_playlist_controller_insecure(
+    create_playlist_params: CreatePlaylistParams = Depends()  # noqa: B008
+) -> CreatePlaylistResponse:
+    search_video = SearchVideo(**dict(create_playlist_params))
+    playlist = create_playlist(
+        Account(uuid="76869f95-4e36-4c22-8549-680be32fc20c", username="test"),
+        search_video)
     video_list = [VideoResponse(path=str(i.path), uuid=str(i.uuid)) for i in playlist]
     return CreatePlaylistResponse(playlist=video_list)
 

@@ -1,10 +1,12 @@
+from uuid import UUID
 from vplaylist.actions.clean_collection import clean_collection
 from vplaylist.actions.create_playlist import create_playlist
 from vplaylist.actions.update_collection import update_collection
 from vplaylist.actions.generate_thumbnails import generate_thumbnails
 from vplaylist.entities.search_video import SearchVideo
-from vplaylist.port.cli.parser import CliParser
+from vplaylist.adapter.cli.parser import CliParser
 from vplaylist.services.play_playlist_service import PlayPlaylistService
+from vplaylist.entities.account import Account
 
 
 class Cli:
@@ -52,7 +54,8 @@ class Cli:
             search_term=self.args["term"],
             search_type=self.args["search_type"],
         )
-        playlist = create_playlist(search_video)
+        account = Account(username="test", uuid=UUID("76869f95-4e36-4c22-8549-680be32fc20c"))
+        playlist = create_playlist(account, search_video)
 
         if self.args["display"]:
             print(playlist)
