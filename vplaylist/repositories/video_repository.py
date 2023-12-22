@@ -7,7 +7,7 @@ from collections import namedtuple
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
-from typing import MutableMapping, Optional
+from typing import MutableMapping, Optional, Iterator
 from uuid import UUID, uuid4
 
 from vplaylist.config.config_registry import ConfigRegistry
@@ -32,7 +32,7 @@ class VideoRepository:
         self.db_paths = self.config_registry.db_paths
         self.ignore_paths = self.config_registry.ignore_paths
 
-    def get_all_generator(self):
+    def get_all_generator(self) -> Iterator[Video]:
         db_connection = sqlite3.connect(self.db_file)
         query = """
             select data_video.path,
@@ -50,9 +50,9 @@ class VideoRepository:
             join data_rootpath on data_video.rootpath_id = data_rootpath.id
         """
         result = db_connection.execute(query)
-        d: list[tuple] = list(tuple())
+        d: list[tuple] = list(tuple())  # type: ignore
 
-        def video_from_result(video_result: tuple) -> Video:
+        def video_from_result(video_result: tuple) -> Video:  # type: ignore
             return Video(
                 path=Path(video_result[0]),
                 rootpath=RootPath(
@@ -72,7 +72,7 @@ class VideoRepository:
             d = result.fetchone()
             if d is None:
                 break
-            yield video_from_result(d)
+            yield video_from_result(d)  # type: ignore
         db_connection.close()
 
     def fetch_video(self, uuid: UUID) -> Video:
@@ -363,18 +363,18 @@ class VideoRepository:
         db_connection.close()
         return True
 
-    def modify_video(self, uuid: UUID, details: VideoDetails) -> bool:
+    def modify_video(self, uuid: UUID, name: Optional[str], note: Optional[int], date_down: Optional[str]) -> bool:
         db_connection = sqlite3.connect(str(self.db_file))
         query_params = []
         sql_set_string = ""
-        if details.name is not None:
-            query_params.append(details.name)
+        if name is not None:
+            query_params.append(name)
             sql_set_string = sql_set_string + "\nSET name = ?"
-        if details.note is not None:
-            query_params.append(str(details.note))
+        if note is not None:
+            query_params.append(str(note))
             sql_set_string = sql_set_string + "\nSET note = ?"
-        if details.date_down is not None:
-            query_params.append(str(details.date_down))
+        if date_down is not None:
+            query_params.append(str(date_down))
             sql_set_string = sql_set_string + "\nSET date_down = ?"
         query_params.append(str(uuid))
         db_connection.execute(

@@ -2,7 +2,7 @@ from vplaylist.services.video_services import create_thumbnail_for_video, has_th
 from vplaylist.repositories.video_repository import VideoRepository
 
 
-def generate_thumbnails():
+def generate_thumbnails() -> None:
     video_repository = VideoRepository()
     videos = video_repository.get_all_generator()
     for video in videos:

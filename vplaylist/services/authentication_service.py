@@ -43,7 +43,7 @@ def extends_token(token: str) -> Optional[str]:
         new_token = json.loads(jwt.decode(
             token,
             config_registry.jwt_secret,
-            algorithms="HS256")
+            algorithms=["HS256"])
         )
         new_token['exp'] = get_expiration_date()
         return jwt.encode(
@@ -59,7 +59,7 @@ def extends_token(token: str) -> Optional[str]:
 def is_token_valid(token: bytes) -> bool:
     config_registry = ConfigRegistry()
     try:
-        jwt.decode(token, config_registry.jwt_secret, algorithms="HS256")
+        jwt.decode(token, config_registry.jwt_secret, algorithms=["HS256"])
         return True
     except jwt.exceptions.DecodeError:
         return False
@@ -69,5 +69,12 @@ def is_token_valid(token: bytes) -> bool:
 
 def get_username_from_token(token: bytes) -> Optional[str]:
     config_registry = ConfigRegistry()
-    decoded = jwt.decode(token, config_registry.jwt_secret, algorithms="HS256")
-    return decoded.get('username')
+    decoded = jwt.decode(
+        token,
+        config_registry.jwt_secret,
+        algorithms=["HS256"]
+    )
+    username = decoded.get('username')
+    if username is not None and not isinstance(username, str):
+        raise Exception("Invalid username")
+    return username

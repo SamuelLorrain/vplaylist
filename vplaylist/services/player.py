@@ -1,19 +1,20 @@
 import subprocess
 from abc import ABC, abstractmethod
-from typing import IO, AnyStr
+from typing import IO
+from vplaylist.app import Containable
 
 # TODO instead of type ignore, may create our own stub
 # file
 import mpv  # type: ignore
 
 
-class Player(ABC):
+class Player(Containable):
     @abstractmethod
     def __init__(self) -> None:
         pass
 
     @abstractmethod
-    def set_playlist(self, playlist: IO[AnyStr]) -> None:
+    def set_playlist(self, playlist: IO[str]) -> None:
         pass
 
     @abstractmethod
@@ -35,7 +36,7 @@ class PlayerMPV(Player):
         self._init_events()
         self.player.script_opt_append='osc-playlist_osc=no'
 
-    def set_playlist(self, playlist: IO[AnyStr]) -> None:
+    def set_playlist(self, playlist: IO[str]) -> None:
         self.player.loadlist(playlist.name)
 
     def log_handler(self, loglevel: str, component: str, message: str) -> None:
@@ -97,7 +98,7 @@ class PlayerVLC(Player):
     def __init__(self) -> None:
         pass
 
-    def set_playlist(self, playlist: IO[AnyStr]) -> None:
+    def set_playlist(self, playlist: IO[str]) -> None:
         self.playlist: IO[str] = playlist
 
     def launch_playlist(self) -> None:

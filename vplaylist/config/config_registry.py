@@ -103,9 +103,9 @@ class ConfigRegistry(metaclass=Singleton):
         return Path(os.path.dirname(__file__)) / "../.." / folder
 
     @cached_property
-    def front_host(self):
+    def front_host(self) -> Optional[str]:
         return self.dotenv_config['FRONT_HOST']
 
     @cached_property
-    def jwt_secret(self):
+    def jwt_secret(self) -> Optional[str]:
         return self.dotenv_config['JWT_SECRET']

@@ -29,7 +29,7 @@ def create_thumbnail_for_video(video: Video) -> None:
     ffmpeg.wait()
 
 
-def has_thumbnail(video: Video):
+def has_thumbnail(video: Video) -> bool:
     config = ConfigRegistry()
     config_path = config.thumbnail_folder / (video.uuid + ".jpg")
     return config_path.exists()

@@ -41,14 +41,19 @@ from vplaylist.entities.search_video import (
     Sorting,
     Webm,
 )
-from vplaylist.port.web_api.responses.create_playlist_response import (
+from vplaylist.entities.video import (
+    Tag,
+    Participant,
+    VideoDetails
+)
+from vplaylist.adapter.web_api.responses.create_playlist_response import (
     CreatePlaylistResponse,
     VideoResponse,
 )
-from vplaylist.port.web_api.responses.video_details_response import VideoDetailsResponse
-from vplaylist.port.web_api.responses.video_stream_response import VideoStreamResponse
+from vplaylist.adapter.web_api.responses.video_details_response import VideoDetailsResponse
+from vplaylist.adapter.web_api.responses.video_stream_response import VideoStreamResponse
 from vplaylist.services.authentication_service import get_new_token
-from vplaylist.port.web_api.security.authentication import authorize_video_uuid, get_account
+from vplaylist.adapter.web_api.security.authentication import authorize_video_uuid, get_account
 
 app = FastAPI()
 
@@ -85,7 +90,7 @@ class CreatePlaylistParams(BaseModel):
 
 @app.get("/playlist/create")
 async def create_playlist_controller(
-    account: Annotated[Optional[Account], Depends(get_account)],
+    account: Annotated[Account, Depends(get_account)],
     create_playlist_params: CreatePlaylistParams = Depends()  # noqa: B008
 ) -> CreatePlaylistResponse:
     search_video = SearchVideo(**dict(create_playlist_params))
@@ -134,7 +139,7 @@ class VideoDetailsParams(BaseModel):
 async def patch_video_details(
     uuid: Annotated[UUID, Depends(authorize_video_uuid)], video_details_params: VideoDetailsParams
 ) -> Response:
-    modify_video_details(uuid, video_details_params)
+    modify_video_details(uuid, video_details_params.name, video_details_params.note, video_details_params.date_down)
     return Response("", status_code=201)
 
 
@@ -175,7 +180,7 @@ class ParticipantParams(BaseModel):
 
 
 @app.get("/participant")
-async def get_participants(search: str = ""):
+async def get_participants(search: str = "") -> list[Participant]:
     search_result = []
     if search == "":
         search_result = search_participant(None)
@@ -185,7 +190,7 @@ async def get_participants(search: str = ""):
 
 
 @app.post("/participant")
-async def upload_participant(participant_params: ParticipantParams):
+async def upload_participant(participant_params: ParticipantParams) -> Participant:
     return create_participant(participant_params.name)
 
 
@@ -210,7 +215,7 @@ class TagParams(BaseModel):
 
 
 @app.get("/tag")
-async def get_tags(search: str = ""):
+async def get_tags(search: str = "") -> list[Tag]:
 
     search_result = []
     if search == "":
@@ -221,7 +226,7 @@ async def get_tags(search: str = ""):
 
 
 @app.post("/tag")
-async def upload_tag(tag_params: TagParams):
+async def upload_tag(tag_params: TagParams) -> Tag:
     return create_tag(tag_params.name)
 
 
