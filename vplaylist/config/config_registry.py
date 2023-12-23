@@ -5,8 +5,9 @@ from functools import cached_property
 from pathlib import Path
 from typing import Optional
 
-from pydantic import BaseModel
 from dotenv import dotenv_values
+from pydantic import BaseModel
+
 from vplaylist.utils.singleton import Singleton
 
 
@@ -104,8 +105,8 @@ class ConfigRegistry(metaclass=Singleton):
 
     @cached_property
     def front_host(self) -> Optional[str]:
-        return self.dotenv_config['FRONT_HOST']
+        return self.dotenv_config["FRONT_HOST"]
 
     @cached_property
     def jwt_secret(self) -> Optional[str]:
-        return self.dotenv_config['JWT_SECRET']
+        return self.dotenv_config["JWT_SECRET"]

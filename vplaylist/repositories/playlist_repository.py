@@ -26,7 +26,9 @@ class PlaylistRepository:
         self.best = self.config_registry.best
         self.db_file = self.config_registry.db_file
 
-    def create_playlist(self, search: SearchVideo, filter_rootpath: list[RootPath]) -> Playlist:
+    def create_playlist(
+        self, search: SearchVideo, filter_rootpath: list[RootPath]
+    ) -> Playlist:
         query = self._convert_search_to_query(search, filter_rootpath)
         print(query.get_query_string())
         print(query.get_params())
@@ -34,7 +36,9 @@ class PlaylistRepository:
         print(query_result)
         return self._format_query_result_to_playlist(query_result)
 
-    def _convert_search_to_query(self, search: SearchVideo, filter_rootpath: list[RootPath]) -> QueryConstructor:
+    def _convert_search_to_query(
+        self, search: SearchVideo, filter_rootpath: list[RootPath]
+    ) -> QueryConstructor:
         # base query
         query = QueryConstructor("data_video")
         query = (

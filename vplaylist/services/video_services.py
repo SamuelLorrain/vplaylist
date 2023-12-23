@@ -1,6 +1,7 @@
-from vplaylist.entities.playlist import Video
-from vplaylist.config.config_registry import ConfigRegistry
 import subprocess
+
+from vplaylist.config.config_registry import ConfigRegistry
+from vplaylist.entities.playlist import Video
 
 
 def create_thumbnail_for_video(video: Video) -> None:
@@ -23,7 +24,7 @@ def create_thumbnail_for_video(video: Video) -> None:
             "thumbnail=300",
             "-frames:v",
             "1",
-            str(config.thumbnail_folder / (video.uuid + ".jpg"))
+            str(config.thumbnail_folder / (video.uuid + ".jpg")),
         ],
     )
     ffmpeg.wait()

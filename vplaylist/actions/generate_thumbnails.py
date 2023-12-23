@@ -1,5 +1,5 @@
-from vplaylist.services.video_services import create_thumbnail_for_video, has_thumbnail
 from vplaylist.repositories.video_repository import VideoRepository
+from vplaylist.services.video_services import create_thumbnail_for_video, has_thumbnail
 
 
 def generate_thumbnails() -> None:

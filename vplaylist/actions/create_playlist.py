@@ -1,6 +1,6 @@
+from vplaylist.entities.account import Account
 from vplaylist.entities.playlist import Playlist
 from vplaylist.entities.search_video import SearchVideo
-from vplaylist.entities.account import Account
 from vplaylist.repositories.account_repository import AccountRepository
 from vplaylist.repositories.playlist_repository import PlaylistRepository
 

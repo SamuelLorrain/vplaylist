@@ -1,7 +1,7 @@
-from datetime import datetime
-from typing import Optional, Annotated
-from uuid import UUID
 import json
+from datetime import datetime
+from typing import Annotated, Optional
+from uuid import UUID
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,30 +10,40 @@ from pydantic import BaseModel
 
 from vplaylist.actions.create_analytics import create_analytics
 from vplaylist.actions.create_new_user import create_new_account
-from vplaylist.actions.verify_account import verify_account
 from vplaylist.actions.create_participant import create_participant
-from vplaylist.actions.create_tag import create_tag
 from vplaylist.actions.create_playlist import create_playlist
+from vplaylist.actions.create_tag import create_tag
 from vplaylist.actions.create_video_participant_relation import (
     create_video_participant_relation,
 )
-from vplaylist.actions.create_video_tag_relation import (
-    create_video_tag_relation,
-)
+from vplaylist.actions.create_video_tag_relation import create_video_tag_relation
 from vplaylist.actions.delete_video_participant_relation import (
     delete_video_participant_relation,
 )
-from vplaylist.actions.delete_video_tag_relation import (
-    delete_video_tag_relation,
-)
+from vplaylist.actions.delete_video_tag_relation import delete_video_tag_relation
 from vplaylist.actions.fetch_video import fetch_video
 from vplaylist.actions.fetch_video_details import fetch_video_details
 from vplaylist.actions.patch_video_details import modify_video_details
 from vplaylist.actions.search_participant import search_participant
 from vplaylist.actions.search_tag import search_tag
+from vplaylist.actions.verify_account import verify_account
+from vplaylist.adapter.web_api.responses.create_playlist_response import (
+    CreatePlaylistResponse,
+    VideoResponse,
+)
+from vplaylist.adapter.web_api.responses.video_details_response import (
+    VideoDetailsResponse,
+)
+from vplaylist.adapter.web_api.responses.video_stream_response import (
+    VideoStreamResponse,
+)
+from vplaylist.adapter.web_api.security.authentication import (
+    authorize_video_uuid,
+    get_account,
+)
 from vplaylist.config.config_registry import ConfigRegistry
-from vplaylist.entities.analytics import AnalyticEvent, Analytics
 from vplaylist.entities.account import Account
+from vplaylist.entities.analytics import AnalyticEvent, Analytics
 from vplaylist.entities.search_video import (
     Quality,
     SearchType,
@@ -41,19 +51,8 @@ from vplaylist.entities.search_video import (
     Sorting,
     Webm,
 )
-from vplaylist.entities.video import (
-    Tag,
-    Participant,
-    VideoDetails
-)
-from vplaylist.adapter.web_api.responses.create_playlist_response import (
-    CreatePlaylistResponse,
-    VideoResponse,
-)
-from vplaylist.adapter.web_api.responses.video_details_response import VideoDetailsResponse
-from vplaylist.adapter.web_api.responses.video_stream_response import VideoStreamResponse
+from vplaylist.entities.video import Participant, Tag
 from vplaylist.services.authentication_service import get_new_token
-from vplaylist.adapter.web_api.security.authentication import authorize_video_uuid, get_account
 
 app = FastAPI()
 
@@ -72,7 +71,7 @@ app.add_middleware(
 app.mount(
     "/static/thumbnails/",
     StaticFiles(directory=str(config.thumbnail_folder)),
-    name="thumbnails"
+    name="thumbnails",
 )
 
 
@@ -91,7 +90,7 @@ class CreatePlaylistParams(BaseModel):
 @app.get("/playlist/create")
 async def create_playlist_controller(
     account: Annotated[Account, Depends(get_account)],
-    create_playlist_params: CreatePlaylistParams = Depends()  # noqa: B008
+    create_playlist_params: CreatePlaylistParams = Depends(),  # noqa: B008
 ) -> CreatePlaylistResponse:
     search_video = SearchVideo(**dict(create_playlist_params))
     playlist = create_playlist(account, search_video)
@@ -101,12 +100,13 @@ async def create_playlist_controller(
 
 @app.get("/playlist/create/insecure")
 async def create_playlist_controller_insecure(
-    create_playlist_params: CreatePlaylistParams = Depends()  # noqa: B008
+    create_playlist_params: CreatePlaylistParams = Depends(),  # noqa: B008
 ) -> CreatePlaylistResponse:
     search_video = SearchVideo(**dict(create_playlist_params))
     playlist = create_playlist(
         Account(uuid="76869f95-4e36-4c22-8549-680be32fc20c", username="test"),
-        search_video)
+        search_video,
+    )
     video_list = [VideoResponse(path=str(i.path), uuid=str(i.uuid)) for i in playlist]
     return CreatePlaylistResponse(playlist=video_list)
 
@@ -124,7 +124,9 @@ async def play_video(uuid: UUID, token: str, req: Request) -> VideoStreamRespons
 
 
 @app.get("/video/{uuid}/details")
-async def get_video_details(uuid: Annotated[UUID, Depends(authorize_video_uuid)]) -> VideoDetailsResponse:
+async def get_video_details(
+    uuid: Annotated[UUID, Depends(authorize_video_uuid)]
+) -> VideoDetailsResponse:
     video_details = fetch_video_details(uuid)
     return video_details
 
@@ -137,9 +139,15 @@ class VideoDetailsParams(BaseModel):
 
 @app.put("/video/{uuid}/details")
 async def patch_video_details(
-    uuid: Annotated[UUID, Depends(authorize_video_uuid)], video_details_params: VideoDetailsParams
+    uuid: Annotated[UUID, Depends(authorize_video_uuid)],
+    video_details_params: VideoDetailsParams,
 ) -> Response:
-    modify_video_details(uuid, video_details_params.name, video_details_params.note, video_details_params.date_down)
+    modify_video_details(
+        uuid,
+        video_details_params.name,
+        video_details_params.note,
+        video_details_params.date_down,
+    )
     return Response("", status_code=201)
 
 
@@ -156,7 +164,8 @@ class VideoAnalyticsParams(BaseModel):
 
 @app.post("/video/{uuid}/analytics")
 async def upload_video_analytics(
-    uuid: Annotated[UUID, Depends(authorize_video_uuid)], video_analytics_params: VideoAnalyticsParams
+    uuid: Annotated[UUID, Depends(authorize_video_uuid)],
+    video_analytics_params: VideoAnalyticsParams,
 ) -> Response:
     events = [
         AnalyticEvent(
@@ -216,7 +225,6 @@ class TagParams(BaseModel):
 
 @app.get("/tag")
 async def get_tags(search: str = "") -> list[Tag]:
-
     search_result = []
     if search == "":
         search_result = search_tag(None)
@@ -251,32 +259,21 @@ class AccountParams(BaseModel):
     password: str
 
 
-@app.post('/register')
+@app.post("/register")
 async def register(account_params: AccountParams) -> Response:
-    account = create_new_account(
-        account_params.username,
-        account_params.password
-    )
+    account = create_new_account(account_params.username, account_params.password)
     if account is None:
         return Response("", status_code=403)
     token = get_new_token(account)
     return Response(
-        json.dumps({"token": token}),
-        media_type="application/json",
-        status_code=201
+        json.dumps({"token": token}), media_type="application/json", status_code=201
     )
 
 
-@app.post('/login')
+@app.post("/login")
 async def login(account_params: AccountParams) -> Response:
-    account = verify_account(
-        account_params.username,
-        account_params.password
-    )
+    account = verify_account(account_params.username, account_params.password)
     if account is None:
         return Response("", status_code=403)
     token = get_new_token(account)
-    return Response(
-        json.dumps({"token": token}),
-        media_type="application/json"
-    )
+    return Response(json.dumps({"token": token}), media_type="application/json")

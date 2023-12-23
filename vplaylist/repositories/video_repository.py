@@ -7,7 +7,7 @@ from collections import namedtuple
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
-from typing import MutableMapping, Optional, Iterator
+from typing import Iterator, MutableMapping, Optional
 from uuid import UUID, uuid4
 
 from vplaylist.config.config_registry import ConfigRegistry
@@ -55,10 +55,7 @@ class VideoRepository:
         def video_from_result(video_result: tuple) -> Video:  # type: ignore
             return Video(
                 path=Path(video_result[0]),
-                rootpath=RootPath(
-                    id=video_result[10],
-                    path=Path(video_result[1])
-                ),
+                rootpath=RootPath(id=video_result[10], path=Path(video_result[1])),
                 height=video_result[2],
                 width=video_result[3],
                 uuid=video_result[4],
@@ -68,6 +65,7 @@ class VideoRepository:
                 note=video_result[8],
                 lu=video_result[9],
             )
+
         while d is not None:
             d = result.fetchone()
             if d is None:
@@ -283,7 +281,11 @@ class VideoRepository:
             if video_detail_except_tags[1] is not None
             else None,
             studio=None,
-            tags=[Tag(name=i[8], note=i[9], uuid=UUID(i[11])) for i in results if i[11] is not None],
+            tags=[
+                Tag(name=i[8], note=i[9], uuid=UUID(i[11]))
+                for i in results
+                if i[11] is not None
+            ],
             date_down=datetime.strptime(video_detail_except_tags[2], "%Y-%m-%d").date(),
             lu=video_detail_except_tags[4],
             height=video_detail_except_tags[5],
@@ -302,7 +304,9 @@ class VideoRepository:
                 "data_participant_type",
                 "data_participant_type.participant_uuid = data_participant.uuid",
             )
-            .add_outer_join("data_type", "data_participant_type.type_uuid = data_type.uuid")
+            .add_outer_join(
+                "data_type", "data_participant_type.type_uuid = data_type.uuid"
+            )
             .add_join(
                 "data_video_participant",
                 "data_video_participant.participant_uuid = data_participant.uuid",
@@ -363,7 +367,13 @@ class VideoRepository:
         db_connection.close()
         return True
 
-    def modify_video(self, uuid: UUID, name: Optional[str], note: Optional[int], date_down: Optional[str]) -> bool:
+    def modify_video(
+        self,
+        uuid: UUID,
+        name: Optional[str],
+        note: Optional[int],
+        date_down: Optional[str],
+    ) -> bool:
         db_connection = sqlite3.connect(str(self.db_file))
         query_params = []
         sql_set_string = ""

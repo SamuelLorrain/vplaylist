@@ -1,9 +1,9 @@
-from typing import Optional
-from vplaylist.config.config_registry import ConfigRegistry
-from vplaylist.entities.account import Account
 import sqlite3
+from typing import Optional
 from uuid import uuid4
 
+from vplaylist.config.config_registry import ConfigRegistry
+from vplaylist.entities.account import Account
 from vplaylist.entities.playlist import RootPath
 
 
@@ -21,7 +21,8 @@ class AccountRepository:
                 INSERT INTO data_account(uuid, username, password)
                 VALUES (?,?,?);
                 """,
-                (str(new_uuid), username, hashed_password))
+                (str(new_uuid), username, hashed_password),
+            )
             conn.commit()
         except sqlite3.IntegrityError:
             conn.close()
@@ -29,10 +30,7 @@ class AccountRepository:
         conn.close()
         return Account(uuid=new_uuid, username=username)
 
-    def get_user_by_name(
-        self,
-        username: str
-    ) -> Optional[tuple[Account, bytes]]:
+    def get_user_by_name(self, username: str) -> Optional[tuple[Account, bytes]]:
         conn = sqlite3.connect(self.db_file)
         cursor = conn.execute(
             """
@@ -40,7 +38,7 @@ class AccountRepository:
             FROM data_account
             WHERE username = ?;
             """,
-            (username,)
+            (username,),
         )
         result = cursor.fetchone()
         conn.close()
@@ -57,7 +55,7 @@ class AccountRepository:
             JOIN account_rootpath ON data_rootpath.id = account_rootpath.rootpath_id
             WHERE account_uuid = ?;
             """,
-            (str(account.uuid),)
+            (str(account.uuid),),
         )
         result = [RootPath(id=row[0], path=row[1]) for row in cursor.fetchall()]
         conn.close()

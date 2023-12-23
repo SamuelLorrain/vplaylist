@@ -1,14 +1,15 @@
 from tempfile import NamedTemporaryFile
 
+from vplaylist.app import app
 from vplaylist.entities.playlist import Playlist
 from vplaylist.services.player import Player
-from vplaylist.app import App
 
 
 class PlayPlaylistService:
     def __init__(self, playlist: Playlist) -> None:
         self.playlist: Playlist = playlist
-        self.player: Player = App().app(Player)
+        # type ignore because of python bug
+        self.player: Player = app(Player)  # type: ignore
 
     def play_playlist(self) -> None:
         if len(self.playlist) < 1:

@@ -1,4 +1,5 @@
 from typing import Optional
+
 from vplaylist.entities.account import Account
 from vplaylist.repositories.account_repository import AccountRepository
 from vplaylist.services.authentication_service import hash_password
