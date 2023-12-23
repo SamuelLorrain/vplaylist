@@ -40,7 +40,7 @@ def get_account(authorization: Annotated[Optional[str], Header()] = None) -> Acc
 def authorize_video_uuid(
     uuid: UUID, authorization: Annotated[Optional[str], Header()] = None
 ) -> UUID:
-    video_repository = VideoRepository()
+    video_repository = app(VideoRepository)  # type: ignore
     account_repository = app(AccountRepository)  # type: ignore
     account = get_account(authorization)
     if video_repository.video_is_in_rootpath(

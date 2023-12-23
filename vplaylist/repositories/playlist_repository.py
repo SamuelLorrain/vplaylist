@@ -42,7 +42,6 @@ class SqlitePlaylistRepository(PlaylistRepository):
         print(query.get_query_string())
         print(query.get_params())
         query_result = self._execute_query(query, search)
-        print(query_result)
         return self._format_query_result_to_playlist(query_result)
 
     def _convert_search_to_query(

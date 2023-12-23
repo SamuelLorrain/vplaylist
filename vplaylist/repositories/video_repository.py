@@ -3,6 +3,7 @@ import os
 import re
 import sqlite3
 import subprocess
+from abc import ABC, abstractmethod
 from collections import namedtuple
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -25,7 +26,43 @@ class VideoPathFromFileSystem:
     timestamp: float
 
 
-class VideoRepository:
+class VideoRepository(ABC):
+    @abstractmethod
+    def get_all_generator(self) -> Iterator[Video]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def fetch_video(self, uuid: UUID) -> Video:
+        raise NotImplementedError
+
+    @abstractmethod
+    def insert_new_videos(self) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    def fetch_video_details(self, uuid: UUID) -> Optional[VideoDetails]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def clean_non_existent_videos(self) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    def modify_video(
+        self,
+        uuid: UUID,
+        name: Optional[str],
+        note: Optional[int],
+        date_down: Optional[str],
+    ) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    def video_is_in_rootpath(self, uuid: UUID, rootpaths: list[RootPath]) -> bool:
+        raise NotImplementedError
+
+
+class SqliteVideoRepository(VideoRepository):
     def __init__(self) -> None:
         self.config_registry = ConfigRegistry()
         self.db_file = self.config_registry.db_file
@@ -269,7 +306,6 @@ class VideoRepository:
         query_string = data_video_query.get_query_string()
         db_connection = sqlite3.connect(str(self.db_file))
         results = db_connection.execute(query_string, params).fetchall()
-        print(results)
         if len(results) < 1:
             return None
         video_detail_except_tags = results[0]
