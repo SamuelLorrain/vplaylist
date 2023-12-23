@@ -1,10 +1,17 @@
 import sqlite3
+from abc import ABC, abstractmethod
 
 from vplaylist.config.config_registry import ConfigRegistry
 from vplaylist.entities.analytics import Analytics
 
 
-class AnalyticsRepository:
+class AnalyticsRepository(ABC):
+    @abstractmethod
+    def save_analytics(self, analytics: Analytics) -> bool:
+        raise NotImplementedError
+
+
+class SqliteAnalyticsRepository(AnalyticsRepository):
     def __init__(self) -> None:
         self.config_registry = ConfigRegistry()
         self.db_file = self.config_registry.db_file
