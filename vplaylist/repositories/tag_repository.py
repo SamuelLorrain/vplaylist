@@ -1,11 +1,34 @@
 import sqlite3
+from abc import ABC, abstractmethod
 from uuid import UUID, uuid4
 
 from vplaylist.config.config_registry import ConfigRegistry
 from vplaylist.entities.video import Tag
 
 
-class TagRepository:
+class TagRepository(ABC):
+    @abstractmethod
+    def get_all(self) -> list[Tag]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def search(self, search: str) -> list[Tag]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def add_tag(self, name: str) -> Tag:
+        raise NotImplementedError
+
+    @abstractmethod
+    def add_video_tag_relation(self, video_uuid: UUID, tag_uuid: UUID) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete_video_tag_relation(self, video_uuid: UUID, tag_uuid: UUID) -> bool:
+        raise NotImplementedError
+
+
+class SqliteTagRepository(TagRepository):
     def __init__(self) -> None:
         self.config_registry = ConfigRegistry()
         self.db_file = self.config_registry.db_file

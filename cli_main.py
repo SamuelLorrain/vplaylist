@@ -6,6 +6,7 @@ from vplaylist.repositories.account_repository import AccountRepository, SqliteA
 from vplaylist.repositories.analytics_repository import AnalyticsRepository, SqliteAnalyticsRepository 
 from vplaylist.repositories.participant_repository import ParticipantRepository, SqliteParticipantRepository 
 from vplaylist.repositories.playlist_repository import PlaylistRepository, SqlitePlaylistRepository 
+from vplaylist.repositories.tag_repository import TagRepository, SqliteTagRepository 
 
 def config_app():
     app = App()
@@ -14,6 +15,7 @@ def config_app():
     app.set(AnalyticsRepository, SqliteAnalyticsRepository())
     app.set(ParticipantRepository, SqliteParticipantRepository())
     app.set(PlaylistRepository, SqlitePlaylistRepository())
+    app.set(TagRepository, SqliteTagRepository())
 
 if __name__ == '__main__':
     config_app()
