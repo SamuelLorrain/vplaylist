@@ -1,11 +1,38 @@
 import sqlite3
+from abc import ABC, abstractmethod
 from uuid import UUID, uuid4
 
 from vplaylist.config.config_registry import ConfigRegistry
 from vplaylist.entities.video import Participant
 
 
-class ParticipantRepository:
+class ParticipantRepository(ABC):
+    @abstractmethod
+    def get_all(self) -> list[Participant]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def search(self, search: str) -> list[Participant]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def add_participant(self, name: str) -> Participant:
+        raise NotImplementedError
+
+    @abstractmethod
+    def add_video_participant_relation(
+        self, video_uuid: UUID, participant_uuid: UUID
+    ) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete_video_participant_relation(
+        self, video_uuid: UUID, participant_uuid: UUID
+    ) -> bool:
+        raise NotImplementedError
+
+
+class SqliteParticipantRepository(ParticipantRepository):
     def __init__(self) -> None:
         self.config_registry = ConfigRegistry()
         self.db_file = self.config_registry.db_file
