@@ -1,5 +1,6 @@
 import random
 import sqlite3
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +21,15 @@ from vplaylist.utils.regex_utils import (
 )
 
 
-class PlaylistRepository:
+class PlaylistRepository(ABC):
+    @abstractmethod
+    def create_playlist(
+        self, search: SearchVideo, filter_rootpath: list[RootPath]
+    ) -> Playlist:
+        raise NotImplementedError
+
+
+class SqlitePlaylistRepository(PlaylistRepository):
     def __init__(self) -> None:
         self.config_registry = ConfigRegistry()
         self.best = self.config_registry.best

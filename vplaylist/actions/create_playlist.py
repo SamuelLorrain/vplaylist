@@ -7,7 +7,7 @@ from vplaylist.repositories.playlist_repository import PlaylistRepository
 
 
 def create_playlist(account: Account, search: SearchVideo) -> Playlist:
-    playlist_repository = PlaylistRepository()
+    playlist_repository = app(PlaylistRepository)  # type: ignore
     account_repository = app(AccountRepository)  # type: ignore
     rootpaths = account_repository.get_rootpath_for_account(account)
     playlist = playlist_repository.create_playlist(search, rootpaths)
