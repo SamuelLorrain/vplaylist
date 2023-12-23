@@ -1,7 +1,6 @@
 from abc import ABC
 from typing import TypeVar, cast
 
-from vplaylist.services.player import Player, PlayerVLC
 from vplaylist.utils.singleton import Singleton
 
 
@@ -25,7 +24,9 @@ class _ServiceContainer:
 class App(metaclass=Singleton):
     def __init__(self) -> None:
         self._service_container = _ServiceContainer()
-        self._service_container.set(Player, PlayerVLC())
+
+    def set(self, interface: type[ABC], instance: ABC) -> None:
+        self._service_container.set(interface, instance)
 
     def app(self, name: type[ABC]) -> ABC:
         return self._service_container.get(name)
