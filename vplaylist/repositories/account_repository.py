@@ -1,4 +1,5 @@
 import sqlite3
+from abc import ABC, abstractmethod
 from typing import Optional
 from uuid import uuid4
 
@@ -7,7 +8,21 @@ from vplaylist.entities.account import Account
 from vplaylist.entities.playlist import RootPath
 
 
-class AccountRepository:
+class AccountRepository(ABC):
+    @abstractmethod
+    def create(self, username: str, hashed_password: bytes) -> Optional[Account]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_user_by_name(self, username: str) -> Optional[tuple[Account, bytes]]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_rootpath_for_account(self, account: Account) -> list[RootPath]:
+        raise NotImplementedError
+
+
+class SqliteAccountRepository(AccountRepository):
     def __init__(self) -> None:
         self.config_registry = ConfigRegistry()
         self.db_file = self.config_registry.db_file

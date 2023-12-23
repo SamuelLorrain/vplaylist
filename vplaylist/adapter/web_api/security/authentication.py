@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import Header, HTTPException
 
+from vplaylist.app import app
 from vplaylist.entities.account import Account
 from vplaylist.repositories.account_repository import AccountRepository
 from vplaylist.repositories.video_repository import VideoRepository
@@ -25,7 +26,7 @@ def get_token_from_authorization_header(authorization: Optional[str]) -> str:
 
 
 def get_account(authorization: Annotated[Optional[str], Header()] = None) -> Account:
-    account_repository = AccountRepository()
+    account_repository = app(AccountRepository)  # type: ignore
     token = get_token_from_authorization_header(authorization)
     username = get_username_from_token(token.encode("utf8"))
     if username is None:
@@ -40,7 +41,7 @@ def authorize_video_uuid(
     uuid: UUID, authorization: Annotated[Optional[str], Header()] = None
 ) -> UUID:
     video_repository = VideoRepository()
-    account_repository = AccountRepository()
+    account_repository = app(AccountRepository)  # type: ignore
     account = get_account(authorization)
     if video_repository.video_is_in_rootpath(
         uuid, account_repository.get_rootpath_for_account(account)
