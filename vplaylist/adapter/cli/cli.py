@@ -19,33 +19,33 @@ class Cli:
 
     def route_args(self) -> None:
         if self.args["generate"]:
-            self.update_collection_controller()
+            self.update_collection_action()
         elif self.args["clean_database"]:
-            self.clean_collection_controller()
+            self.clean_collection_action()
         elif self.args["generate_thumbnails"]:
-            self.generate_thumbnails_controller()
+            self.generate_thumbnails_action()
         else:
-            self.create_playlist_controller()
+            self.create_playlist_action()
 
-    def update_collection_controller(self) -> None:
+    def update_collection_action(self) -> None:
         is_successfully_updated = update_collection()
         if is_successfully_updated:
             print("database successfully generated!")
         else:
             print("error while generate database!")
 
-    def clean_collection_controller(self) -> None:
+    def clean_collection_action(self) -> None:
         is_successfully_cleaned = clean_collection()
         if is_successfully_cleaned:
             print("database successfully cleaned!")
         else:
             print("error while cleaning database!")
 
-    def generate_thumbnails_controller(self) -> None:
+    def generate_thumbnails_action(self) -> None:
         print("generating thumbnails NOT WORKING")
         generate_thumbnails()
 
-    def create_playlist_controller(self) -> None:
+    def create_playlist_action(self) -> None:
         search_video = SearchVideo(
             webm=self.args["webm"],
             quality=self.args["quality"],
